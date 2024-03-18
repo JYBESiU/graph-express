@@ -1,4 +1,5 @@
-import postgres from "postgres";
+import { Request } from "express";
+import postgres, { Sql } from "postgres";
 import ssh2 from "ssh2";
 
 const db1Config = {
@@ -54,19 +55,31 @@ const socketFunction = ({
   });
 
 //@ts-ignore
-export const sql1 = postgres({
+const sql1 = postgres({
   ...db1Config,
   socket: socketFunction,
 });
 
 //@ts-ignore
-export const sql10 = postgres({
+const sql10 = postgres({
   ...db10Config,
   socket: socketFunction,
 });
 
 //@ts-ignore
-export const sql100 = postgres({
+const sql100 = postgres({
   ...db100Config,
   socket: socketFunction,
 });
+
+export function getSql(req: Request) {
+  const sf = req.params["sf"];
+
+  let sql: Sql = postgres();
+
+  if (sf === "1") sql = sql1;
+  if (sf === "10") sql = sql10;
+  if (sf === "100") sql = sql100;
+
+  return sql;
+}
