@@ -4,10 +4,13 @@ import express, {
   Response,
 } from "express";
 import cors from "cors";
-import { RowList, Row } from "postgres";
 import cytoscape from "cytoscape";
+//@ts-ignore
+import cola from "cytoscape-cola";
+//@ts-ignore
+import cise from "cytoscape-cise";
 
-import { port } from "./constant";
+import { nodeColors, port } from "./constant";
 import { getSql } from "./db";
 import { NodeLabel } from "./types";
 import { getNodesMaps } from "./nodeSql";
@@ -15,6 +18,9 @@ import { getEdgesFunctionsByNodes } from "./edgeSql";
 
 const app: Application = express();
 app.use(cors());
+
+cytoscape.use(cola);
+cytoscape.use(cise);
 
 app.listen(port, function () {
   console.log(`App is listening on port ${port} !`);
@@ -25,10 +31,12 @@ app.get(
   async (req: Request, res: Response) => {
     const sql = await getSql(req);
 
+    const clusters = [];
     const nodes = [];
     for (let [_, nodeLabel] of Object.entries(NodeLabel)) {
       const n = await getNodesMaps[nodeLabel](sql);
       nodes.push(n);
+      clusters.push(n.map((node) => node.data.id));
     }
 
     const edges = [];
@@ -47,7 +55,10 @@ app.get(
     const cy = cytoscape({
       elements,
       layout: {
-        name: "cose",
+        name: "cise",
+        //@ts-ignore
+        clusters,
+        nodeSeparation: 20,
       },
     });
 
