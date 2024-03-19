@@ -10,11 +10,14 @@ import cola from "cytoscape-cola";
 //@ts-ignore
 import cise from "cytoscape-cise";
 
-import { nodeColors, port } from "./constant";
-import { getSql } from "./db";
-import { NodeLabel } from "./types";
-import { getNodesMaps } from "./nodeSql";
-import { getEdgesFunctionsByNodes } from "./edgeSql";
+import { nodeColors, port } from "./utils/constant";
+import { getSql } from "./utils/db";
+import { NodeLabel } from "./utils/types";
+import {
+  getCyElements,
+  getElementsByNodes,
+  getCytoscapeElements,
+} from "./elements";
 
 const app: Application = express();
 app.use(cors());
@@ -31,43 +34,17 @@ app.get(
   async (req: Request, res: Response) => {
     const sql = await getSql(req);
 
-    const clusters = [];
-    const nodes = [];
-    for (let [_, nodeLabel] of Object.entries(NodeLabel)) {
-      const n = await getNodesMaps[nodeLabel](sql);
-      nodes.push(n);
-      clusters.push(n.map((node) => node.data.id));
-    }
-
-    const edges = [];
     const AllNodeLabels = Object.entries(NodeLabel).map(
       ([_, v]) => v
     );
-    const edgeFunctions =
-      getEdgesFunctionsByNodes(AllNodeLabels);
-    for (const edgeFunction of edgeFunctions) {
-      const e = await edgeFunction(sql);
-      edges.push(e);
-    }
+    const { elements, clusters } = await getElementsByNodes(
+      sql,
+      AllNodeLabels
+    );
 
-    const elements = [...nodes.flat(), ...edges.flat()];
+    const cy = getCytoscapeElements(elements, clusters);
 
-    const cy = cytoscape({
-      elements,
-      layout: {
-        name: "cise",
-        //@ts-ignore
-        clusters,
-        nodeSeparation: 20,
-      },
-    });
-
-    //@ts-ignore
-    const cyElements = cy.json().elements;
-    const results = [
-      ...(cyElements.nodes || []),
-      ...(cyElements.edges || []),
-    ];
+    const results = getCyElements(cy);
 
     res.send(results);
   }

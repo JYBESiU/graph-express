@@ -1,6 +1,6 @@
 import { Sql } from "postgres";
 
-import { NodeLabel } from "./types";
+import { NodeLabel } from "../utils/types";
 
 type GetEdgeFunctionType =
   typeof getCityIsPartOfCountryEdges;

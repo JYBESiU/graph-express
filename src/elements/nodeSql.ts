@@ -1,7 +1,7 @@
 import { Sql } from "postgres";
 
-import { NodeLabel } from "./types";
-import { nodeColors } from "./constant";
+import { NodeLabel } from "../utils/types";
+import { nodeColors } from "../utils/constant";
 
 export const getNodesMaps = {
   [NodeLabel.CITY]: getCityNodes,
