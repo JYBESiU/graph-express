@@ -79,3 +79,19 @@ app.get("/graph", async (req: Request, res: Response) => {
 
   res.send([]);
 });
+
+app.get(
+  "/node-types",
+  async (req: Request, res: Response) => {
+    const nodeTypes = Object.entries(NodeLabel).map(
+      ([_, value]) => ({
+        name: value,
+        color: nodeColors[value],
+      })
+    );
+
+    // TODO: node count 추가
+
+    res.send(nodeTypes);
+  }
+);
