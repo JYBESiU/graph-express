@@ -72,14 +72,17 @@ const sql100 = postgres({
   socket: socketFunction,
 });
 
-export function getSql(req: Request) {
-  const sf = req.params["sf"];
+export async function getSql(req: Request) {
+  const sf = req.query.sf;
 
   let sql: Sql = postgres();
 
   if (sf === "1") sql = sql1;
   if (sf === "10") sql = sql10;
   if (sf === "100") sql = sql100;
+
+  await sql`LOAD 'pg_graph'`;
+  await sql`SET SEARCH_PATH=graph_catalog, "$user", public`;
 
   return sql;
 }
