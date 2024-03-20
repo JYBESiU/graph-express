@@ -34,9 +34,7 @@ app.get(
   async (req: Request, res: Response) => {
     const sql = await getSql(req);
 
-    const AllNodeLabels = Object.entries(NodeLabel).map(
-      ([_, v]) => v
-    );
+    const AllNodeLabels = Object.values(NodeLabel);
     const { elements, clusters } = await getElementsByNodes(
       sql,
       AllNodeLabels
@@ -52,9 +50,18 @@ app.get(
 
 app.get("/graph", async (req: Request, res: Response) => {
   const sql = await getSql(req);
-  const label = req.query.label as string;
+  const labels = req.query.labels as NodeLabel[];
 
-  res.send([]);
+  const { elements, clusters } = await getElementsByNodes(
+    sql,
+    labels
+  );
+
+  const cy = getCytoscapeElements(elements, clusters);
+
+  const results = getCyElements(cy);
+
+  res.send(results);
 });
 
 app.get(
@@ -62,7 +69,7 @@ app.get(
   async (req: Request, res: Response) => {
     const nodeTypes = Object.entries(NodeLabel).map(
       ([_, value]) => ({
-        name: value,
+        label: value,
         color: nodeColors[value],
       })
     );

@@ -1,8 +1,8 @@
 export enum NodeLabel {
   CITY = "city",
-  COMPANY = "company",
-  CONTINENT = "continent",
   COUNTRY = "country",
+  CONTINENT = "continent",
+  COMPANY = "company",
   FORUM = "forum",
   MESSAGE = "message",
   PERSON = "person",
