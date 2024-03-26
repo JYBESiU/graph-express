@@ -11,19 +11,6 @@ export enum NodeLabel {
   UNIVERSITY = "university",
 }
 
-/**
- * city : 300
- * company : 300
- * continent x
- * country : 30
- * forum 1000
- * message :  100000
- * person : 2000
- * tag 100
- * tagclass 100
- * univ 1600
- */
-
 export enum EdgeLabel {}
 // -- city_ispartof_country,
 // -- country_ispartof_continent,
@@ -42,3 +29,16 @@ export enum EdgeLabel {}
 // -- person_workat_company,
 // -- tag_hastype_tc,
 // -- tc_issubclassof_tc
+
+/**
+ * city : 300
+ * company : 300
+ * continent x
+ * country : 30
+ * forum 1000
+ * message :  100000
+ * person : 2000
+ * tag 100
+ * tagclass 100
+ * univ 1600
+ */
