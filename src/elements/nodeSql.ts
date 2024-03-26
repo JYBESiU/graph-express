@@ -113,6 +113,19 @@ async function getPersonNodes(sql: Sql) {
   }));
 }
 
+export async function getPersonNodesNoLimit(sql: Sql) {
+  const nodes = await sql`
+  SELECT *, ${nodeColors[NodeLabel.PERSON]} as bg
+  FROM cypher($$
+    MATCH (n: person)
+    RETURN n.vertex_id
+  $$ ) as (id bigint);`;
+
+  return nodes.map((node) => ({
+    data: { ...node, id: "person_" + node.id },
+  }));
+}
+
 async function getTagNodes(sql: Sql) {
   const nodes = await sql`
   SELECT *, ${nodeColors[NodeLabel.TAG]} as bg

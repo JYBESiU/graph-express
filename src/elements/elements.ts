@@ -22,7 +22,12 @@ export async function getElementsByNodes(
     getEdgesFunctionsByNodes(nodeLables);
   for (const edgeFunction of edgeFunctions) {
     const e = await edgeFunction(sql);
-    edges.push(e);
+    const eid = e.map((ee) => {
+      //@ts-ignore
+      ee.data.id = ee.data.source + "_" + ee.data.target;
+      return ee;
+    });
+    edges.push(eid);
   }
 
   const elements = [...nodes.flat(), ...edges.flat()];

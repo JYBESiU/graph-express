@@ -319,6 +319,24 @@ async function getPersonKnowsPersonEdges(sql: Sql) {
   }));
 }
 
+export async function getPersonKnowsPersonEdgesNoLimit(
+  sql: Sql
+) {
+  const edges = await sql`
+    SELECT *
+    FROM cypher($$
+      MATCH (n1:person)-[k:person_knows_person]->(n2:person)
+      RETURN n1.vertex_id, n2.vertex_id
+    $$) as (source bigint, target bigint);`;
+
+  return edges.map((edge) => ({
+    data: {
+      source: "person_" + edge.source,
+      target: "person_" + edge.target,
+    },
+  }));
+}
+
 async function getPersonLikesMessageEdges(sql: Sql) {
   const edges = await sql`
     SELECT *
