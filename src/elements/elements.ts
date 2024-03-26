@@ -5,15 +5,18 @@ import { NodeLabel } from "../utils/types";
 import {
   getNodesMaps,
   getEdgesFunctionsByNodes,
+  getNodeCountMaps,
 } from "../sql";
 
-export async function getElementsByNodes(
+export async function getElementsByNodeLabels(
   sql: Sql,
   nodeLables: NodeLabel[]
 ) {
   const clusters = [];
   const nodes = [];
   for (const nodeLabel of nodeLables) {
+    const count = await getNodeCountMaps[nodeLabel](sql);
+
     const n = await getNodesMaps[nodeLabel](sql);
     nodes.push(n);
     clusters.push(n.map((node) => node.data.id));
@@ -47,3 +50,8 @@ export function getCyElements(cy: Core) {
 
   return results;
 }
+
+export function getElementsByNodeSampling(
+  sql: Sql,
+  nodeLables: NodeLabel[]
+) {}

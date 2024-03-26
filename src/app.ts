@@ -10,12 +10,13 @@ import { getSql } from "./utils/db";
 import { NodeLabel } from "./utils/types";
 import {
   getCyElements,
-  getElementsByNodes,
+  getElementsByNodeLabels,
   getCytoscapeElements,
   getCytoscapeElementsCircle,
   getCytosnapImage,
 } from "./elements";
 import {
+  getCityNodes,
   getPersonKnowsPersonEdgesNoLimit,
   getPersonNodesNoLimit,
 } from "./sql";
@@ -33,10 +34,8 @@ app.get(
     const sql = await getSql(req);
 
     const AllNodeLabels = Object.values(NodeLabel);
-    const { elements, clusters } = await getElementsByNodes(
-      sql,
-      AllNodeLabels
-    );
+    const { elements, clusters } =
+      await getElementsByNodeLabels(sql, AllNodeLabels);
 
     const cy = getCytoscapeElements(elements, clusters);
 
@@ -51,6 +50,9 @@ app.get(
   async (req: Request, res: Response) => {
     const sql = await getSql(req);
     const labels = req.query.labels as NodeLabel[];
+
+    const n = await getCityNodes(sql, 1000);
+    console.log("n: ", n, n.length);
   }
 );
 
@@ -58,10 +60,8 @@ app.get("/graph", async (req: Request, res: Response) => {
   const sql = await getSql(req);
   const labels = req.query.labels as NodeLabel[];
 
-  const { elements, clusters } = await getElementsByNodes(
-    sql,
-    labels
-  );
+  const { elements, clusters } =
+    await getElementsByNodeLabels(sql, labels);
 
   const cy = getCytoscapeElements(elements, clusters);
 
@@ -76,7 +76,10 @@ app.get(
     const sql = await getSql(req);
     const labels = req.query.labels as NodeLabel[];
 
-    const results = await getElementsByNodes(sql, labels);
+    const results = await getElementsByNodeLabels(
+      sql,
+      labels
+    );
 
     res.send(results);
   }
@@ -88,10 +91,8 @@ app.get(
     const sql = await getSql(req);
     const labels = req.query.labels as NodeLabel[];
 
-    const { elements, clusters } = await getElementsByNodes(
-      sql,
-      labels
-    );
+    const { elements, clusters } =
+      await getElementsByNodeLabels(sql, labels);
 
     const img = await getCytosnapImage(elements, clusters);
     console.log("img : " + img);
