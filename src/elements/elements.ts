@@ -2,8 +2,10 @@ import { Core } from "cytoscape";
 import { Sql } from "postgres";
 
 import { NodeLabel } from "../utils/types";
-import { getNodesMaps } from "./nodeSql";
-import { getEdgesFunctionsByNodes } from "./edgeSql";
+import {
+  getNodesMaps,
+  getEdgesFunctionsByNodes,
+} from "../sql";
 
 export async function getElementsByNodes(
   sql: Sql,

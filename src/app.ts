@@ -12,11 +12,13 @@ import {
   getCyElements,
   getElementsByNodes,
   getCytoscapeElements,
-  getPersonNodesNoLimit,
-  getPersonKnowsPersonEdgesNoLimit,
   getCytoscapeElementsCircle,
   getCytosnapImage,
 } from "./elements";
+import {
+  getPersonKnowsPersonEdgesNoLimit,
+  getPersonNodesNoLimit,
+} from "./sql";
 
 const app: Application = express();
 app.use(cors());
