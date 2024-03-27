@@ -5,9 +5,16 @@ import cytosnap from "cytosnap";
 import cola from "cytoscape-cola";
 //@ts-ignore
 import cise from "cytoscape-cise";
+//@ts-ignore
+import euler from "cytoscape-euler";
+//@ts-ignore
+import fcose from "cytoscape-fcose";
+
 import style from "./cy-style.json";
 
 cytoscape.use(cola);
+cytoscape.use(fcose);
+cytoscape.use(euler);
 cytoscape.use(cise);
 cytosnap.use(["cytoscape-cise"]);
 
@@ -19,7 +26,13 @@ export function getCytoscapeElements(
     elements,
     //@ts-ignore
     style,
-    layout: makeLayout(clusters),
+    layout: {
+      name: "fcose",
+      //@ts-ignore
+      animate: false,
+      quality: "draft",
+    },
+    // layout: makeLayout(clusters),
   });
 
   return cy;

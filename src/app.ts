@@ -51,13 +51,16 @@ app.get(
   async (req: Request, res: Response) => {
     const sql = await getSql(req);
     const labels = req.query.labels as NodeLabel[];
-    const AllNodeLabels = Object.values(NodeLabel);
 
-    await getElementsByNodeSampling(
-      sql,
-      AllNodeLabels,
-      0.01
-    );
+    const { elements, clusters } =
+      await getElementsByNodeSampling(sql, labels, 0.005);
+    console.log("elements: ", elements.length);
+
+    const cy = getCytoscapeElements(elements, clusters);
+    console.log("end");
+    const results = getCyElements(cy);
+
+    res.send(results);
   }
 );
 
