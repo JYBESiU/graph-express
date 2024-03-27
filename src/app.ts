@@ -14,6 +14,7 @@ import {
   getCytoscapeElements,
   getCytoscapeElementsCircle,
   getCytosnapImage,
+  getElementsByNodeSampling,
 } from "./elements";
 import {
   getCityNodes,
@@ -50,9 +51,13 @@ app.get(
   async (req: Request, res: Response) => {
     const sql = await getSql(req);
     const labels = req.query.labels as NodeLabel[];
+    const AllNodeLabels = Object.values(NodeLabel);
 
-    const n = await getCityNodes(sql, 1000);
-    console.log("n: ", n, n.length);
+    await getElementsByNodeSampling(
+      sql,
+      AllNodeLabels,
+      0.01
+    );
   }
 );
 

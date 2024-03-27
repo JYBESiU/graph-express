@@ -43,7 +43,6 @@ async function getCompanyNodes(sql: Sql, size?: number) {
   SELECT *, ${nodeColors[NodeLabel.COMPANY]} as bg
   FROM cypher($$
     MATCH (n: company)
-    WHERE n.vertex_id < 300
     RETURN n.vertex_id
   $$ ) as (id bigint)
   ${
@@ -82,7 +81,6 @@ async function getCountryNodes(sql: Sql, size?: number) {
   SELECT *, ${nodeColors[NodeLabel.COUNTRY]} as bg
   FROM cypher($$
     MATCH (n: country)
-    WHERE n.vertex_id < 30
     RETURN n.vertex_id
   $$ ) as (id bigint)
   ${
@@ -102,7 +100,6 @@ async function getForumNodes(sql: Sql, size?: number) {
   SELECT *, ${nodeColors[NodeLabel.FORUM]} as bg
   FROM cypher($$
     MATCH (n: forum)
-    WHERE n.vertex_id < 10000
     RETURN n.vertex_id
   $$ ) as (id bigint)
   ${
@@ -122,7 +119,6 @@ async function getMessageNodes(sql: Sql, size?: number) {
   SELECT *, ${nodeColors[NodeLabel.MESSAGE]} as bg
   FROM cypher($$
     MATCH (n: message)
-    WHERE n.vertex_id < 100000
     RETURN n.vertex_id
   $$ ) as (id bigint)
   ${
@@ -142,7 +138,6 @@ async function getPersonNodes(sql: Sql, size?: number) {
   SELECT *, ${nodeColors[NodeLabel.PERSON]} as bg
   FROM cypher($$
     MATCH (n: person)
-    WHERE n.vertex_id < 2000
     RETURN n.vertex_id
   $$ ) as (id bigint)
   ${
@@ -184,7 +179,6 @@ async function getTagNodes(sql: Sql, size?: number) {
   SELECT *, ${nodeColors[NodeLabel.TAG]} as bg
   FROM cypher($$
     MATCH (n: tag)
-    WHERE n.vertex_id < 100
     RETURN n.vertex_id
   $$ ) as (id bigint)
   ${
@@ -204,7 +198,6 @@ async function getTagclassNodes(sql: Sql, size?: number) {
   SELECT *, ${nodeColors[NodeLabel.TAGCLASS]} as bg
   FROM cypher($$
     MATCH (n: tagclass)
-    WHERE n.vertex_id < 100
     RETURN n.vertex_id
   $$ ) as (id bigint)
   ${
@@ -224,7 +217,6 @@ async function getUniversityNodes(sql: Sql, size?: number) {
   SELECT *, ${nodeColors[NodeLabel.UNIVERSITY]} as bg
   FROM cypher($$
     MATCH (n: university)
-    WHERE n.vertex_id < 1600
     RETURN n.vertex_id
   $$ ) as (id bigint)
   ${

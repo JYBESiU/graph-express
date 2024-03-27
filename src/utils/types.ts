@@ -12,33 +12,33 @@ export enum NodeLabel {
 }
 
 export enum EdgeLabel {}
-// -- city_ispartof_country,
-// -- country_ispartof_continent,
-// -- forum_containerof_message,
-// -- forum_hasmember_person,
-// -- forum_hasmoderator_person,
-// -- forum_hastag_tag,
-// -- message_hascreator_person,
-// -- message_hastag_tag,
-// -- message_replyof_message,
-// -- person_hasinterest_tag,
-// -- person_islocatedin_city,
-// -- person_knows_person,
-// -- person_likes_message,
-// -- person_studyat_university,
-// -- person_workat_company,
-// -- tag_hastype_tc,
-// -- tc_issubclassof_tc
+// city_ispartof_country 1343
+// country_ispartof_continent 111
+// forum_containerof_message 1003605
+// forum_hasmember_person 1611869
+// forum_hasmoderator_person 90492
+// forum_hastag_tag 309766
+// message_hascreator_person 3055774
+// message_hastag_tag 3411651
+// message_replyof_message 2052169
+// person_hasinterest_tag 229166
+// person_islocatedin_city 9892
+// person_knows_person 361246
+// person_likes_message 2190095
+// person_studyat_university 7949
+// person_workat_company 21654
+// tag_hastype_tc 16080
+// tc_issubclassof_tc 70
 
 /**
- * city : 300
- * company : 300
- * continent x
- * country : 30
- * forum 1000
- * message :  100000
- * person : 2000
- * tag 100
- * tagclass 100
- * univ 1600
+ * city 1343
+ * country 111
+ * continent 6
+ * company 1575
+ * forum 90492
+ * message 3055774
+ * person 9892
+ * tag 16080
+ * tagclass 71
+ * univ 6380
  */
