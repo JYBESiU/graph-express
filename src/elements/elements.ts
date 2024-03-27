@@ -48,6 +48,7 @@ export function getCyElements(cy: Core) {
   return results;
 }
 
+// TODO: total count 부분 추출해서 미리 구해놓기, 중복 안 되게 맵 저장
 export async function getElementsByNodeSampling(
   sql: Sql,
   nodeLables: NodeLabel[],
@@ -108,6 +109,7 @@ export async function getElementsByNodeSampling(
     });
     edges.push(eid);
   }
+  console.log(edges.flat().length);
 
   const elements = [
     ...Object.values(nodes).flat(),

@@ -47,13 +47,13 @@ app.get(
 );
 
 app.get(
-  "/graph/sample",
+  "/graph/node-sample",
   async (req: Request, res: Response) => {
     const sql = await getSql(req);
     const labels = req.query.labels as NodeLabel[];
 
     const { elements, clusters } =
-      await getElementsByNodeSampling(sql, labels, 0.005);
+      await getElementsByNodeSampling(sql, labels, 0.002);
     console.log("elements: ", elements.length);
 
     const cy = getCytoscapeElements(elements, clusters);

@@ -24,7 +24,7 @@ export enum EdgeLabel {}
 // person_hasinterest_tag 229166
 // person_islocatedin_city 9892
 // person_knows_person 361246
-// person_likes_message 2190095K
+// person_likes_message 2190095
 // person_studyat_university 7949
 // person_workat_company 21654
 // tag_hastype_tc 16080
