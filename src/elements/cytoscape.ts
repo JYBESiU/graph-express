@@ -26,12 +26,12 @@ export function getCytoscapeElements(
     elements,
     //@ts-ignore
     style,
-    layout: {
-      name: "circle",
-      //@ts-ignore
-      animate: false,
-    },
-    // layout: makeLayout(clusters),
+    // layout: {
+    //   name: "circle",
+    //   //@ts-ignore
+    //   animate: false,
+    // },
+    layout: makeLayout(clusters),
   });
 
   return cy;
@@ -70,7 +70,7 @@ export function getCytoscapeElementsCircle(
   return cy;
 }
 
-const makeLayout = (clusters: string[][]) => ({
+const makeLayout = (clusters?: string[][]) => ({
   name: "cise",
   clusters,
   nodeSeparation: 10,

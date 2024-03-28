@@ -74,7 +74,7 @@ app.get(
     const { elements } = await getElementsByEdgeSampling(
       sql,
       labels,
-      0.001
+      0.0001
     );
     console.log("elements: ", elements.length);
 
