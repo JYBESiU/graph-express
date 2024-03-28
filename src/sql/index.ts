@@ -1,3 +1,4 @@
 export * from "./edgeSql";
-export * from "./nodeCountSql";
+export * from "./edgeCountSql";
 export * from "./nodeSql";
+export * from "./nodeCountSql";

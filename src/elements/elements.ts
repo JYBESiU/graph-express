@@ -7,6 +7,7 @@ import {
   getNodeCountMaps,
 } from "../sql";
 import { NodeLabel } from "../utils/types";
+import { getEdgeCountFunctionsByNodes } from "../sql/edgeCountSql";
 
 export async function getElementsByNodeLabels(
   sql: Sql,
@@ -118,3 +119,9 @@ export async function getElementsByNodeSampling(
 
   return { elements, clusters };
 }
+
+export async function getElementsByEdgeSampling(
+  sql: Sql,
+  nodeLables: NodeLabel[],
+  samplingRate: number
+) {}
