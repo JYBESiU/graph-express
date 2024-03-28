@@ -11,6 +11,7 @@ export enum NodeLabel {
   UNIVERSITY = "university",
 }
 
+// TODO: 만들어서 selector 함수 고치기
 export enum EdgeLabel {}
 // city_ispartof_country 1343
 // country_ispartof_continent 111

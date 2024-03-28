@@ -23,7 +23,7 @@ async function getCityNodeCount(sql: Sql): Promise<number> {
     RETURN count(n.vertex_id) as count
   $$ ) as (count bigint);`;
 
-  return count[0].count;
+  return Number(count[0].count);
 }
 
 async function getCountryNodeCount(
@@ -36,7 +36,7 @@ async function getCountryNodeCount(
     RETURN count(n.vertex_id) as count
   $$ ) as (count bigint);`;
 
-  return count[0].count;
+  return Number(count[0].count);
 }
 
 async function getContinentNodeCount(
@@ -49,7 +49,7 @@ async function getContinentNodeCount(
     RETURN count(n.vertex_id) as count
   $$ ) as (count bigint);`;
 
-  return count[0].count;
+  return Number(count[0].count);
 }
 
 async function getCompanyNodeCount(
@@ -62,7 +62,7 @@ async function getCompanyNodeCount(
     RETURN count(n.vertex_id) as count
   $$ ) as (count bigint);`;
 
-  return count[0].count;
+  return Number(count[0].count);
 }
 
 async function getForumNodeCount(
@@ -75,7 +75,7 @@ async function getForumNodeCount(
     RETURN count(n.vertex_id) as count
   $$ ) as (count bigint);`;
 
-  return count[0].count;
+  return Number(count[0].count);
 }
 
 async function getMessageNodeCount(
@@ -88,7 +88,7 @@ async function getMessageNodeCount(
     RETURN count(n.vertex_id) as count
   $$ ) as (count bigint);`;
 
-  return count[0].count;
+  return Number(count[0].count);
 }
 
 async function getPersonNodeCount(
@@ -101,7 +101,7 @@ async function getPersonNodeCount(
     RETURN count(n.vertex_id) as count
   $$ ) as (count bigint);`;
 
-  return count[0].count;
+  return Number(count[0].count);
 }
 
 async function getTagNodeCount(sql: Sql): Promise<number> {
@@ -112,7 +112,7 @@ async function getTagNodeCount(sql: Sql): Promise<number> {
     RETURN count(n.vertex_id) as count
   $$ ) as (count bigint);`;
 
-  return count[0].count;
+  return Number(count[0].count);
 }
 
 async function getTagclassNodeCount(
@@ -125,7 +125,7 @@ async function getTagclassNodeCount(
     RETURN count(n.vertex_id) as count
   $$ ) as (count bigint);`;
 
-  return count[0].count;
+  return Number(count[0].count);
 }
 
 async function getUniversityNodeCount(
@@ -138,5 +138,5 @@ async function getUniversityNodeCount(
     RETURN count(n.vertex_id) as count
   $$ ) as (count bigint);`;
 
-  return count[0].count;
+  return Number(count[0].count);
 }

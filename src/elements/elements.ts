@@ -5,9 +5,10 @@ import {
   getNodesMaps,
   getEdgeFunctionsByNodes,
   getNodeCountMaps,
+  getEdgeCountFunctionsByNodes,
 } from "../sql";
 import { NodeLabel } from "../utils/types";
-import { getEdgeCountFunctionsByNodes } from "../sql/edgeCountSql";
+import { nodeColors } from "../utils/constant";
 
 export async function getElementsByNodeLabels(
   sql: Sql,
@@ -124,4 +125,81 @@ export async function getElementsByEdgeSampling(
   sql: Sql,
   nodeLables: NodeLabel[],
   samplingRate: number
-) {}
+) {
+  const edgeCountFunctions =
+    getEdgeCountFunctionsByNodes(nodeLables);
+
+  const counts: { [x: string]: number } = {};
+  for (const [
+    edgeCountFunction,
+    name,
+  ] of edgeCountFunctions) {
+    const count = await edgeCountFunction(sql);
+    counts[name] = count;
+  }
+  const totalCounts = Object.values(counts).reduce(
+    (acc, curr) => acc + curr,
+    0
+  );
+  console.log("totalCounts: ", totalCounts);
+  const totalToBeReducedNum = Math.floor(
+    totalCounts * (1 - samplingRate)
+  );
+
+  const nodes: ElementDefinition[] = [];
+  const edges = [];
+  const edgeFunctions = getEdgeFunctionsByNodes(nodeLables);
+  for (const [edgeFunction, _, __, name] of edgeFunctions) {
+    console.log(name);
+    const ratio = Number(
+      (counts[name] / totalCounts).toFixed(10)
+    );
+    const toBeReduced = Math.floor(
+      totalToBeReducedNum * ratio
+    );
+    const reducedSize = counts[name] - toBeReduced;
+    console.log("counts: ", counts[name]);
+    console.log("reducedSize: ", reducedSize + "\n");
+
+    const e = await edgeFunction(
+      sql,
+      _,
+      __,
+      Math.max(1, reducedSize)
+    );
+    const eid = e.map((ee) => {
+      const source = ee.data.source;
+      const target = ee.data.target;
+
+      if (!nodes.some((node) => node.data.id === source)) {
+        nodes.push({
+          data: {
+            id: source,
+            bg: getBG(source),
+          },
+        });
+      }
+      if (!nodes.some((node) => node.data.id === target)) {
+        nodes.push({
+          data: {
+            id: target,
+            bg: getBG(target),
+          },
+        });
+      }
+
+      //@ts-ignore
+      ee.data.id = ee.data.source + "_" + ee.data.target;
+      return ee;
+    });
+    edges.push(eid);
+  }
+
+  console.log("nodes", nodes.length);
+  const elements = [...nodes, ...edges.flat()];
+
+  return { elements };
+}
+
+const getBG = (id: string) =>
+  nodeColors[id.split("_")[0] as NodeLabel];

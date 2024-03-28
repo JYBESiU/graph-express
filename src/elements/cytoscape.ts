@@ -20,17 +20,16 @@ cytosnap.use(["cytoscape-cise"]);
 
 export function getCytoscapeElements(
   elements: ElementDefinition[],
-  clusters: string[][]
+  clusters?: string[][]
 ) {
   const cy = cytoscape({
     elements,
     //@ts-ignore
     style,
     layout: {
-      name: "fcose",
+      name: "circle",
       //@ts-ignore
       animate: false,
-      quality: "draft",
     },
     // layout: makeLayout(clusters),
   });

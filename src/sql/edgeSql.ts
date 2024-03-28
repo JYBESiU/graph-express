@@ -13,7 +13,8 @@ export const getEdgeFunctionsByNodes = (
   const edgeFunctions: [
     GetEdgeFunctionType,
     ElementDefinition[] | undefined,
-    ElementDefinition[] | undefined
+    ElementDefinition[] | undefined,
+    string
   ][] = [];
 
   // Edge: city_ispartof_country
@@ -25,6 +26,7 @@ export const getEdgeFunctionsByNodes = (
       getCityIsPartOfCountryEdges,
       nodes?.[NodeLabel.CITY],
       nodes?.[NodeLabel.COUNTRY],
+      "city_ispartof_country",
     ]);
 
   // Edge: country_ispartof_continent
@@ -36,6 +38,7 @@ export const getEdgeFunctionsByNodes = (
       getCountryIsPartOfContinentEdges,
       nodes?.[NodeLabel.COUNTRY],
       nodes?.[NodeLabel.CONTINENT],
+      "country_ispartof_continent",
     ]);
 
   // Edge: forum_containerof_message
@@ -47,6 +50,7 @@ export const getEdgeFunctionsByNodes = (
       getForumContainerOfMessageEdges,
       nodes?.[NodeLabel.FORUM],
       nodes?.[NodeLabel.MESSAGE],
+      "forum_containerof_message",
     ]);
 
   // Edge: forum_hasmember_person
@@ -59,11 +63,13 @@ export const getEdgeFunctionsByNodes = (
       getForumHasMemberPersonEdges,
       nodes?.[NodeLabel.FORUM],
       nodes?.[NodeLabel.PERSON],
+      "forum_hasmember_person",
     ]);
     edgeFunctions.push([
       getForumHasModeratorPersonEdges,
       nodes?.[NodeLabel.FORUM],
       nodes?.[NodeLabel.PERSON],
+      "forum_hasmoderator_person",
     ]);
   }
 
@@ -76,6 +82,7 @@ export const getEdgeFunctionsByNodes = (
       getForumHasTagTagEdges,
       nodes?.[NodeLabel.FORUM],
       nodes?.[NodeLabel.TAG],
+      "forum_hastag_tag",
     ]);
 
   // Edge: message_hascreator_person
@@ -87,6 +94,7 @@ export const getEdgeFunctionsByNodes = (
       getMessageHasCreatorPersonEdges,
       nodes?.[NodeLabel.MESSAGE],
       nodes?.[NodeLabel.PERSON],
+      "message_hascreator_person",
     ]);
 
   // Edge: message_hastag_tag
@@ -98,6 +106,7 @@ export const getEdgeFunctionsByNodes = (
       getMessageHasTagTagEdges,
       nodes?.[NodeLabel.MESSAGE],
       nodes?.[NodeLabel.TAG],
+      "message_hastag_tag",
     ]);
 
   // Edge: message_replyof_message
@@ -106,6 +115,7 @@ export const getEdgeFunctionsByNodes = (
       getMessageReplyOfMessageEdges,
       nodes?.[NodeLabel.MESSAGE],
       nodes?.[NodeLabel.MESSAGE],
+      "message_replyof_message",
     ]);
 
   // Edge: person_hasinterest_tag
@@ -117,6 +127,7 @@ export const getEdgeFunctionsByNodes = (
       getPersonHasInterestTagEdges,
       nodes?.[NodeLabel.PERSON],
       nodes?.[NodeLabel.TAG],
+      "person_hasinterest_tag",
     ]);
 
   // Edge: person_islocatedin_city
@@ -128,6 +139,7 @@ export const getEdgeFunctionsByNodes = (
       getPersonIsLocatedInCityEdges,
       nodes?.[NodeLabel.PERSON],
       nodes?.[NodeLabel.CITY],
+      "person_islocatedin_city",
     ]);
 
   // Edge: person_knows_person
@@ -136,6 +148,7 @@ export const getEdgeFunctionsByNodes = (
       getPersonKnowsPersonEdges,
       nodes?.[NodeLabel.PERSON],
       nodes?.[NodeLabel.PERSON],
+      "person_knows_person",
     ]);
 
   // Edge: person_likes_message
@@ -147,6 +160,7 @@ export const getEdgeFunctionsByNodes = (
       getPersonLikesMessageEdges,
       nodes?.[NodeLabel.PERSON],
       nodes?.[NodeLabel.MESSAGE],
+      "person_likes_message",
     ]);
 
   // Edge: person_studyat_university
@@ -158,6 +172,7 @@ export const getEdgeFunctionsByNodes = (
       getPersonStudyAtUniversityEdges,
       nodes?.[NodeLabel.PERSON],
       nodes?.[NodeLabel.UNIVERSITY],
+      "person_studyat_university",
     ]);
 
   // Edge: person_workat_company
@@ -169,6 +184,7 @@ export const getEdgeFunctionsByNodes = (
       getPersonWorkAtCompanyEdges,
       nodes?.[NodeLabel.PERSON],
       nodes?.[NodeLabel.COMPANY],
+      "person_workat_company",
     ]);
 
   // Edge: tag_hastype_tc
@@ -180,6 +196,7 @@ export const getEdgeFunctionsByNodes = (
       getTagHasTypeTagclassEdges,
       nodes?.[NodeLabel.TAG],
       nodes?.[NodeLabel.TAGCLASS],
+      "tag_hastype_tc",
     ]);
 
   // Edge: tc_issubclassof_tc
@@ -188,6 +205,7 @@ export const getEdgeFunctionsByNodes = (
       getTagclassIsSubclassOfTagclassEdges,
       nodes?.[NodeLabel.TAGCLASS],
       nodes?.[NodeLabel.TAGCLASS],
+      "tc_issubclassof_tc",
     ]);
 
   return edgeFunctions;
@@ -196,14 +214,15 @@ export const getEdgeFunctionsByNodes = (
 async function getCityIsPartOfCountryEdges(
   sql: Sql,
   cityNodes?: ElementDefinition[],
-  countryNodes?: ElementDefinition[]
+  countryNodes?: ElementDefinition[],
+  size?: number
 ) {
-  const isSampled =
+  const isNodeSampled =
     cityNodes !== undefined && countryNodes !== undefined;
-  const cityIds = cityNodes!.map((city) =>
+  const cityIds = cityNodes?.map((city) =>
     Number(city.data.id!.split("_")[1])
   );
-  const countryIds = countryNodes!.map((country) =>
+  const countryIds = countryNodes?.map((country) =>
     Number(country.data.id!.split("_")[1])
   );
 
@@ -214,9 +233,15 @@ async function getCityIsPartOfCountryEdges(
       RETURN n1.vertex_id, n2.vertex_id
     $$) as (source bigint, target bigint)
     ${
-      isSampled
-        ? sql`WHERE source IN ${sql(cityIds)} 
-              AND target IN ${sql(countryIds)}`
+      isNodeSampled
+        ? sql`WHERE source IN ${sql(cityIds!)} 
+              AND target IN ${sql(countryIds!)}`
+        : sql``
+    }
+    ${
+      size
+        ? sql`ORDER BY random()
+              LIMIT ${size}`
         : sql``
     };`;
 
@@ -231,15 +256,16 @@ async function getCityIsPartOfCountryEdges(
 async function getCountryIsPartOfContinentEdges(
   sql: Sql,
   countryNodes?: ElementDefinition[],
-  continentNodes?: ElementDefinition[]
+  continentNodes?: ElementDefinition[],
+  size?: number
 ) {
-  const isSampled =
+  const isNodeSampled =
     countryNodes !== undefined &&
     continentNodes !== undefined;
-  const countryIds = countryNodes!.map((country) =>
+  const countryIds = countryNodes?.map((country) =>
     Number(country.data.id!.split("_")[1])
   );
-  const continentIds = continentNodes!.map((continent) =>
+  const continentIds = continentNodes?.map((continent) =>
     Number(continent.data.id!.split("_")[1])
   );
 
@@ -250,9 +276,15 @@ async function getCountryIsPartOfContinentEdges(
       RETURN n1.vertex_id, n2.vertex_id
     $$) as (source bigint, target bigint)
     ${
-      isSampled
-        ? sql`WHERE source IN ${sql(countryIds)} 
-              AND target IN ${sql(continentIds)}`
+      isNodeSampled
+        ? sql`WHERE source IN ${sql(countryIds!)} 
+              AND target IN ${sql(continentIds!)}`
+        : sql``
+    }
+    ${
+      size
+        ? sql`ORDER BY random()
+              LIMIT ${size}`
         : sql``
     };`;
 
@@ -267,14 +299,15 @@ async function getCountryIsPartOfContinentEdges(
 async function getForumContainerOfMessageEdges(
   sql: Sql,
   forumNodes?: ElementDefinition[],
-  messageNodes?: ElementDefinition[]
+  messageNodes?: ElementDefinition[],
+  size?: number
 ) {
-  const isSampled =
+  const isNodeSampled =
     forumNodes !== undefined && messageNodes !== undefined;
-  const forumIds = forumNodes!.map((forum) =>
+  const forumIds = forumNodes?.map((forum) =>
     Number(forum.data.id!.split("_")[1])
   );
-  const messageIds = messageNodes!.map((message) =>
+  const messageIds = messageNodes?.map((message) =>
     Number(message.data.id!.split("_")[1])
   );
 
@@ -285,9 +318,15 @@ async function getForumContainerOfMessageEdges(
       RETURN n1.vertex_id, n2.vertex_id
     $$) as (source bigint, target bigint)
     ${
-      isSampled
-        ? sql`WHERE source IN ${sql(forumIds)} 
-              AND target IN ${sql(messageIds)}`
+      isNodeSampled
+        ? sql`WHERE source IN ${sql(forumIds!)} 
+              AND target IN ${sql(messageIds!)}`
+        : sql``
+    }
+    ${
+      size
+        ? sql`ORDER BY random()
+              LIMIT ${size}`
         : sql``
     };`;
 
@@ -302,14 +341,15 @@ async function getForumContainerOfMessageEdges(
 async function getForumHasMemberPersonEdges(
   sql: Sql,
   forumNodes?: ElementDefinition[],
-  personNodes?: ElementDefinition[]
+  personNodes?: ElementDefinition[],
+  size?: number
 ) {
-  const isSampled =
+  const isNodeSampled =
     forumNodes !== undefined && personNodes !== undefined;
-  const forumIds = forumNodes!.map((forum) =>
+  const forumIds = forumNodes?.map((forum) =>
     Number(forum.data.id!.split("_")[1])
   );
-  const personIds = personNodes!.map((person) =>
+  const personIds = personNodes?.map((person) =>
     Number(person.data.id!.split("_")[1])
   );
 
@@ -320,9 +360,15 @@ async function getForumHasMemberPersonEdges(
       RETURN n1.vertex_id, n2.vertex_id
     $$) as (source bigint, target bigint)
     ${
-      isSampled
-        ? sql`WHERE source IN ${sql(forumIds)} 
-              AND target IN ${sql(personIds)}`
+      isNodeSampled
+        ? sql`WHERE source IN ${sql(forumIds!)} 
+              AND target IN ${sql(personIds!)}`
+        : sql``
+    }
+    ${
+      size
+        ? sql`ORDER BY random()
+              LIMIT ${size}`
         : sql``
     };`;
 
@@ -337,14 +383,15 @@ async function getForumHasMemberPersonEdges(
 async function getForumHasModeratorPersonEdges(
   sql: Sql,
   forumNodes?: ElementDefinition[],
-  personNodes?: ElementDefinition[]
+  personNodes?: ElementDefinition[],
+  size?: number
 ) {
-  const isSampled =
+  const isNodeSampled =
     forumNodes !== undefined && personNodes !== undefined;
-  const forumIds = forumNodes!.map((forum) =>
+  const forumIds = forumNodes?.map((forum) =>
     Number(forum.data.id!.split("_")[1])
   );
-  const personIds = personNodes!.map((person) =>
+  const personIds = personNodes?.map((person) =>
     Number(person.data.id!.split("_")[1])
   );
 
@@ -355,9 +402,15 @@ async function getForumHasModeratorPersonEdges(
       RETURN n1.vertex_id, n2.vertex_id
     $$) as (source bigint, target bigint)
     ${
-      isSampled
-        ? sql`WHERE source IN ${sql(forumIds)} 
-              AND target IN ${sql(personIds)}`
+      isNodeSampled
+        ? sql`WHERE source IN ${sql(forumIds!)} 
+              AND target IN ${sql(personIds!)}`
+        : sql``
+    }
+    ${
+      size
+        ? sql`ORDER BY random()
+              LIMIT ${size}`
         : sql``
     };`;
 
@@ -372,14 +425,15 @@ async function getForumHasModeratorPersonEdges(
 async function getForumHasTagTagEdges(
   sql: Sql,
   forumNodes?: ElementDefinition[],
-  tagNodes?: ElementDefinition[]
+  tagNodes?: ElementDefinition[],
+  size?: number
 ) {
-  const isSampled =
+  const isNodeSampled =
     forumNodes !== undefined && tagNodes !== undefined;
-  const forumIds = forumNodes!.map((forum) =>
+  const forumIds = forumNodes?.map((forum) =>
     Number(forum.data.id!.split("_")[1])
   );
-  const tagIds = tagNodes!.map((tag) =>
+  const tagIds = tagNodes?.map((tag) =>
     Number(tag.data.id!.split("_")[1])
   );
 
@@ -390,9 +444,15 @@ async function getForumHasTagTagEdges(
       RETURN n1.vertex_id, n2.vertex_id
     $$) as (source bigint, target bigint)
     ${
-      isSampled
-        ? sql`WHERE source IN ${sql(forumIds)} 
-              AND target IN ${sql(tagIds)}`
+      isNodeSampled
+        ? sql`WHERE source IN ${sql(forumIds!)} 
+              AND target IN ${sql(tagIds!)}`
+        : sql``
+    }
+    ${
+      size
+        ? sql`ORDER BY random()
+              LIMIT ${size}`
         : sql``
     };`;
 
@@ -407,14 +467,15 @@ async function getForumHasTagTagEdges(
 async function getMessageHasCreatorPersonEdges(
   sql: Sql,
   messageNodes?: ElementDefinition[],
-  personNodes?: ElementDefinition[]
+  personNodes?: ElementDefinition[],
+  size?: number
 ) {
-  const isSampled =
+  const isNodeSampled =
     messageNodes !== undefined && personNodes !== undefined;
-  const messageIds = messageNodes!.map((message) =>
+  const messageIds = messageNodes?.map((message) =>
     Number(message.data.id!.split("_")[1])
   );
-  const personIds = personNodes!.map((person) =>
+  const personIds = personNodes?.map((person) =>
     Number(person.data.id!.split("_")[1])
   );
 
@@ -425,9 +486,15 @@ async function getMessageHasCreatorPersonEdges(
       RETURN n1.vertex_id, n2.vertex_id
     $$) as (source bigint, target bigint)
     ${
-      isSampled
-        ? sql`WHERE source IN ${sql(messageIds)} 
-              AND target IN ${sql(personIds)}`
+      isNodeSampled
+        ? sql`WHERE source IN ${sql(messageIds!)} 
+              AND target IN ${sql(personIds!)}`
+        : sql``
+    }
+    ${
+      size
+        ? sql`ORDER BY random()
+              LIMIT ${size}`
         : sql``
     };`;
 
@@ -442,14 +509,15 @@ async function getMessageHasCreatorPersonEdges(
 async function getMessageHasTagTagEdges(
   sql: Sql,
   messageNodes?: ElementDefinition[],
-  tagNodes?: ElementDefinition[]
+  tagNodes?: ElementDefinition[],
+  size?: number
 ) {
-  const isSampled =
+  const isNodeSampled =
     messageNodes !== undefined && tagNodes !== undefined;
-  const messageIds = messageNodes!.map((message) =>
+  const messageIds = messageNodes?.map((message) =>
     Number(message.data.id!.split("_")[1])
   );
-  const tagIds = tagNodes!.map((tag) =>
+  const tagIds = tagNodes?.map((tag) =>
     Number(tag.data.id!.split("_")[1])
   );
 
@@ -460,9 +528,15 @@ async function getMessageHasTagTagEdges(
       RETURN n1.vertex_id, n2.vertex_id
     $$) as (source bigint, target bigint)
     ${
-      isSampled
-        ? sql`WHERE source IN ${sql(messageIds)} 
-              AND target IN ${sql(tagIds)}`
+      isNodeSampled
+        ? sql`WHERE source IN ${sql(messageIds!)} 
+              AND target IN ${sql(tagIds!)}`
+        : sql``
+    }
+    ${
+      size
+        ? sql`ORDER BY random()
+              LIMIT ${size}`
         : sql``
     };`;
 
@@ -477,15 +551,16 @@ async function getMessageHasTagTagEdges(
 async function getMessageReplyOfMessageEdges(
   sql: Sql,
   messageNodes1?: ElementDefinition[],
-  messageNodes2?: ElementDefinition[]
+  messageNodes2?: ElementDefinition[],
+  size?: number
 ) {
-  const isSampled =
+  const isNodeSampled =
     messageNodes1 !== undefined &&
     messageNodes2 !== undefined;
-  const messageIds1 = messageNodes1!.map((message) =>
+  const messageIds1 = messageNodes1?.map((message) =>
     Number(message.data.id!.split("_")[1])
   );
-  const messageIds2 = messageNodes2!.map((tag) =>
+  const messageIds2 = messageNodes2?.map((tag) =>
     Number(tag.data.id!.split("_")[1])
   );
 
@@ -496,9 +571,15 @@ async function getMessageReplyOfMessageEdges(
       RETURN n1.vertex_id, n2.vertex_id
     $$) as (source bigint, target bigint)
     ${
-      isSampled
-        ? sql`WHERE source IN ${sql(messageIds1)} 
-              AND target IN ${sql(messageIds2)}`
+      isNodeSampled
+        ? sql`WHERE source IN ${sql(messageIds1!)} 
+              AND target IN ${sql(messageIds2!)}`
+        : sql``
+    }
+    ${
+      size
+        ? sql`ORDER BY random()
+              LIMIT ${size}`
         : sql``
     };`;
 
@@ -513,14 +594,15 @@ async function getMessageReplyOfMessageEdges(
 async function getPersonHasInterestTagEdges(
   sql: Sql,
   personNodes?: ElementDefinition[],
-  tagNodes?: ElementDefinition[]
+  tagNodes?: ElementDefinition[],
+  size?: number
 ) {
-  const isSampled =
+  const isNodeSampled =
     personNodes !== undefined && tagNodes !== undefined;
-  const personIds = personNodes!.map((person) =>
+  const personIds = personNodes?.map((person) =>
     Number(person.data.id!.split("_")[1])
   );
-  const tagIds = tagNodes!.map((tag) =>
+  const tagIds = tagNodes?.map((tag) =>
     Number(tag.data.id!.split("_")[1])
   );
 
@@ -531,9 +613,15 @@ async function getPersonHasInterestTagEdges(
       RETURN n1.vertex_id, n2.vertex_id
     $$) as (source bigint, target bigint)
     ${
-      isSampled
-        ? sql`WHERE source IN ${sql(personIds)} 
-              AND target IN ${sql(tagIds)}`
+      isNodeSampled
+        ? sql`WHERE source IN ${sql(personIds!)} 
+              AND target IN ${sql(tagIds!)}`
+        : sql``
+    }
+    ${
+      size
+        ? sql`ORDER BY random()
+              LIMIT ${size}`
         : sql``
     };`;
 
@@ -548,14 +636,15 @@ async function getPersonHasInterestTagEdges(
 async function getPersonIsLocatedInCityEdges(
   sql: Sql,
   personNodes?: ElementDefinition[],
-  cityNodes?: ElementDefinition[]
+  cityNodes?: ElementDefinition[],
+  size?: number
 ) {
-  const isSampled =
+  const isNodeSampled =
     personNodes !== undefined && cityNodes !== undefined;
-  const personIds = personNodes!.map((person) =>
+  const personIds = personNodes?.map((person) =>
     Number(person.data.id!.split("_")[1])
   );
-  const cityIds = cityNodes!.map((city) =>
+  const cityIds = cityNodes?.map((city) =>
     Number(city.data.id!.split("_")[1])
   );
 
@@ -566,9 +655,15 @@ async function getPersonIsLocatedInCityEdges(
       RETURN n1.vertex_id, n2.vertex_id
     $$) as (source bigint, target bigint)
     ${
-      isSampled
-        ? sql`WHERE source IN ${sql(personIds)} 
-              AND target IN ${sql(cityIds)}`
+      isNodeSampled
+        ? sql`WHERE source IN ${sql(personIds!)} 
+              AND target IN ${sql(cityIds!)}`
+        : sql``
+    }
+    ${
+      size
+        ? sql`ORDER BY random()
+              LIMIT ${size}`
         : sql``
     };`;
 
@@ -583,15 +678,16 @@ async function getPersonIsLocatedInCityEdges(
 async function getPersonKnowsPersonEdges(
   sql: Sql,
   personNodes1?: ElementDefinition[],
-  personNodes2?: ElementDefinition[]
+  personNodes2?: ElementDefinition[],
+  size?: number
 ) {
-  const isSampled =
+  const isNodeSampled =
     personNodes1 !== undefined &&
     personNodes2 !== undefined;
-  const personIds1 = personNodes1!.map((person) =>
+  const personIds1 = personNodes1?.map((person) =>
     Number(person.data.id!.split("_")[1])
   );
-  const personIds2 = personNodes2!.map((person) =>
+  const personIds2 = personNodes2?.map((person) =>
     Number(person.data.id!.split("_")[1])
   );
 
@@ -602,9 +698,15 @@ async function getPersonKnowsPersonEdges(
       RETURN n1.vertex_id, n2.vertex_id
     $$) as (source bigint, target bigint)
     ${
-      isSampled
-        ? sql`WHERE source IN ${sql(personIds1)} 
-              AND target IN ${sql(personIds2)}`
+      isNodeSampled
+        ? sql`WHERE source IN ${sql(personIds1!)} 
+              AND target IN ${sql(personIds2!)}`
+        : sql``
+    }
+    ${
+      size
+        ? sql`ORDER BY random()
+              LIMIT ${size}`
         : sql``
     };`;
 
@@ -620,14 +722,15 @@ async function getPersonKnowsPersonEdges(
 async function getPersonLikesMessageEdges(
   sql: Sql,
   personNodes?: ElementDefinition[],
-  messageNodes?: ElementDefinition[]
+  messageNodes?: ElementDefinition[],
+  size?: number
 ) {
-  const isSampled =
+  const isNodeSampled =
     personNodes !== undefined && messageNodes !== undefined;
-  const personIds = personNodes!.map((person) =>
+  const personIds = personNodes?.map((person) =>
     Number(person.data.id!.split("_")[1])
   );
-  const messageIds = messageNodes!.map((message) =>
+  const messageIds = messageNodes?.map((message) =>
     Number(message.data.id!.split("_")[1])
   );
 
@@ -638,9 +741,15 @@ async function getPersonLikesMessageEdges(
       RETURN n1.vertex_id, n2.vertex_id
     $$) as (source bigint, target bigint)
     ${
-      isSampled
-        ? sql`WHERE source IN ${sql(personIds)} 
-              AND target IN ${sql(messageIds)}`
+      isNodeSampled
+        ? sql`WHERE source IN ${sql(personIds!)} 
+              AND target IN ${sql(messageIds!)}`
+        : sql``
+    }
+    ${
+      size
+        ? sql`ORDER BY random()
+              LIMIT ${size}`
         : sql``
     };`;
 
@@ -656,15 +765,16 @@ async function getPersonLikesMessageEdges(
 async function getPersonStudyAtUniversityEdges(
   sql: Sql,
   personNodes?: ElementDefinition[],
-  universityNodes?: ElementDefinition[]
+  universityNodes?: ElementDefinition[],
+  size?: number
 ) {
-  const isSampled =
+  const isNodeSampled =
     personNodes !== undefined &&
     universityNodes !== undefined;
-  const personIds = personNodes!.map((person) =>
+  const personIds = personNodes?.map((person) =>
     Number(person.data.id!.split("_")[1])
   );
-  const universityIds = universityNodes!.map((university) =>
+  const universityIds = universityNodes?.map((university) =>
     Number(university.data.id!.split("_")[1])
   );
 
@@ -675,9 +785,15 @@ async function getPersonStudyAtUniversityEdges(
       RETURN n1.vertex_id, n2.vertex_id
     $$) as (source bigint, target bigint)
     ${
-      isSampled
-        ? sql`WHERE source IN ${sql(personIds)} 
-              AND target IN ${sql(universityIds)}`
+      isNodeSampled
+        ? sql`WHERE source IN ${sql(personIds!)} 
+              AND target IN ${sql(universityIds!)}`
+        : sql``
+    }
+    ${
+      size
+        ? sql`ORDER BY random()
+              LIMIT ${size}`
         : sql``
     };`;
 
@@ -693,14 +809,15 @@ async function getPersonStudyAtUniversityEdges(
 async function getPersonWorkAtCompanyEdges(
   sql: Sql,
   personNodes?: ElementDefinition[],
-  companyNodes?: ElementDefinition[]
+  companyNodes?: ElementDefinition[],
+  size?: number
 ) {
-  const isSampled =
+  const isNodeSampled =
     personNodes !== undefined && companyNodes !== undefined;
-  const personIds = personNodes!.map((person) =>
+  const personIds = personNodes?.map((person) =>
     Number(person.data.id!.split("_")[1])
   );
-  const companyIds = companyNodes!.map((company) =>
+  const companyIds = companyNodes?.map((company) =>
     Number(company.data.id!.split("_")[1])
   );
 
@@ -711,9 +828,15 @@ async function getPersonWorkAtCompanyEdges(
       RETURN n1.vertex_id, n2.vertex_id
     $$) as (source bigint, target bigint)
     ${
-      isSampled
-        ? sql`WHERE source IN ${sql(personIds)} 
-              AND target IN ${sql(companyIds)}`
+      isNodeSampled
+        ? sql`WHERE source IN ${sql(personIds!)} 
+              AND target IN ${sql(companyIds!)}`
+        : sql``
+    }
+    ${
+      size
+        ? sql`ORDER BY random()
+              LIMIT ${size}`
         : sql``
     };`;
 
@@ -729,14 +852,15 @@ async function getPersonWorkAtCompanyEdges(
 async function getTagHasTypeTagclassEdges(
   sql: Sql,
   tagNodes?: ElementDefinition[],
-  tcNodes?: ElementDefinition[]
+  tcNodes?: ElementDefinition[],
+  size?: number
 ) {
-  const isSampled =
+  const isNodeSampled =
     tagNodes !== undefined && tcNodes !== undefined;
-  const tagIds = tagNodes!.map((tag) =>
+  const tagIds = tagNodes?.map((tag) =>
     Number(tag.data.id!.split("_")[1])
   );
-  const tcIds = tcNodes!.map((tc) =>
+  const tcIds = tcNodes?.map((tc) =>
     Number(tc.data.id!.split("_")[1])
   );
 
@@ -747,9 +871,15 @@ async function getTagHasTypeTagclassEdges(
       RETURN n1.vertex_id, n2.vertex_id
     $$) as (source bigint, target bigint)
     ${
-      isSampled
-        ? sql`WHERE source IN ${sql(tagIds)} 
-              AND target IN ${sql(tcIds)}`
+      isNodeSampled
+        ? sql`WHERE source IN ${sql(tagIds!)} 
+              AND target IN ${sql(tcIds!)}`
+        : sql``
+    }
+    ${
+      size
+        ? sql`ORDER BY random()
+              LIMIT ${size}`
         : sql``
     };`;
 
@@ -765,14 +895,15 @@ async function getTagHasTypeTagclassEdges(
 async function getTagclassIsSubclassOfTagclassEdges(
   sql: Sql,
   tcNodes1?: ElementDefinition[],
-  tcNodes2?: ElementDefinition[]
+  tcNodes2?: ElementDefinition[],
+  size?: number
 ) {
-  const isSampled =
+  const isNodeSampled =
     tcNodes1 !== undefined && tcNodes2 !== undefined;
-  const tcIds1 = tcNodes1!.map((tc) =>
+  const tcIds1 = tcNodes1?.map((tc) =>
     Number(tc.data.id!.split("_")[1])
   );
-  const tcIds2 = tcNodes2!.map((tc) =>
+  const tcIds2 = tcNodes2?.map((tc) =>
     Number(tc.data.id!.split("_")[1])
   );
 
@@ -783,9 +914,15 @@ async function getTagclassIsSubclassOfTagclassEdges(
       RETURN n1.vertex_id, n2.vertex_id
     $$) as (source bigint, target bigint)
     ${
-      isSampled
-        ? sql`WHERE source IN ${sql(tcIds1)} 
-              AND target IN ${sql(tcIds2)}`
+      isNodeSampled
+        ? sql`WHERE source IN ${sql(tcIds1!)} 
+              AND target IN ${sql(tcIds2!)}`
+        : sql``
+    }
+    ${
+      size
+        ? sql`ORDER BY random()
+              LIMIT ${size}`
         : sql``
     };`;
 

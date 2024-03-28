@@ -7,30 +7,40 @@ type GetEdgeCountFunctionType =
 export const getEdgeCountFunctionsByNodes = (
   nodeLabels: NodeLabel[]
 ) => {
-  const edgeFunctions: GetEdgeCountFunctionType[] = [];
+  const edgeFunctions: [
+    GetEdgeCountFunctionType,
+    string
+  ][] = [];
 
   // Edge: city_ispartof_country
   if (
     nodeLabels.includes(NodeLabel.CITY) &&
     nodeLabels.includes(NodeLabel.COUNTRY)
   )
-    edgeFunctions.push(getCityIsPartOfCountryEdgeCount);
+    edgeFunctions.push([
+      getCityIsPartOfCountryEdgeCount,
+      "city_ispartof_country",
+    ]);
 
   // Edge: country_ispartof_continent
   if (
     nodeLabels.includes(NodeLabel.COUNTRY) &&
     nodeLabels.includes(NodeLabel.CONTINENT)
   )
-    edgeFunctions.push(
-      getCountryIsPartOfContinentEdgeCount
-    );
+    edgeFunctions.push([
+      getCountryIsPartOfContinentEdgeCount,
+      "country_ispartof_continent",
+    ]);
 
   // Edge: forum_containerof_message
   if (
     nodeLabels.includes(NodeLabel.FORUM) &&
     nodeLabels.includes(NodeLabel.MESSAGE)
   )
-    edgeFunctions.push(getForumContainerOfMessageEdgeCount);
+    edgeFunctions.push([
+      getForumContainerOfMessageEdgeCount,
+      "forum_containerof_message",
+    ]);
 
   // Edge: forum_hasmember_person
   // Edge: forum_hasmoderator_person
@@ -39,8 +49,14 @@ export const getEdgeCountFunctionsByNodes = (
     nodeLabels.includes(NodeLabel.PERSON)
   )
     edgeFunctions.push(
-      getForumHasMemberPersonEdgeCount,
-      getForumHasModeratorPersonEdgeCount
+      [
+        getForumHasMemberPersonEdgeCount,
+        "forum_hasmember_person",
+      ],
+      [
+        getForumHasModeratorPersonEdgeCount,
+        "forum_hasmoderator_person",
+      ]
     );
 
   // Edge: forum_hastag_tag
@@ -48,77 +64,111 @@ export const getEdgeCountFunctionsByNodes = (
     nodeLabels.includes(NodeLabel.FORUM) &&
     nodeLabels.includes(NodeLabel.TAG)
   )
-    edgeFunctions.push(getForumHasTagTagEdgeCount);
+    edgeFunctions.push([
+      getForumHasTagTagEdgeCount,
+      "forum_hastag_tag",
+    ]);
 
   // Edge: message_hascreator_person
   if (
     nodeLabels.includes(NodeLabel.MESSAGE) &&
     nodeLabels.includes(NodeLabel.PERSON)
   )
-    edgeFunctions.push(getMessageHasCreatorPersonEdgeCount);
+    edgeFunctions.push([
+      getMessageHasCreatorPersonEdgeCount,
+      "message_hascreator_person",
+    ]);
 
   // Edge: message_hastag_tag
   if (
     nodeLabels.includes(NodeLabel.MESSAGE) &&
     nodeLabels.includes(NodeLabel.TAG)
   )
-    edgeFunctions.push(getMessageHasTagTagEdgeCount);
+    edgeFunctions.push([
+      getMessageHasTagTagEdgeCount,
+      "message_hastag_tag",
+    ]);
 
   // Edge: message_replyof_message
   if (nodeLabels.includes(NodeLabel.MESSAGE))
-    edgeFunctions.push(getMessageReplyOfMessageEdgeCount);
+    edgeFunctions.push([
+      getMessageReplyOfMessageEdgeCount,
+      "message_replyof_message",
+    ]);
 
   // Edge: person_hasinterest_tag
   if (
     nodeLabels.includes(NodeLabel.PERSON) &&
     nodeLabels.includes(NodeLabel.TAG)
   )
-    edgeFunctions.push(getPersonHasInterestTagEdgeCount);
+    edgeFunctions.push([
+      getPersonHasInterestTagEdgeCount,
+      "person_hasinterest_tag",
+    ]);
 
   // Edge: person_islocatedin_city
   if (
     nodeLabels.includes(NodeLabel.PERSON) &&
     nodeLabels.includes(NodeLabel.CITY)
   )
-    edgeFunctions.push(getPersonIsLocatedInCityEdgeCount);
+    edgeFunctions.push([
+      getPersonIsLocatedInCityEdgeCount,
+      "person_islocatedin_city",
+    ]);
 
   // Edge: person_knows_person
   if (nodeLabels.includes(NodeLabel.PERSON))
-    edgeFunctions.push(getPersonKnowsPersonEdgeCount);
+    edgeFunctions.push([
+      getPersonKnowsPersonEdgeCount,
+      "person_knows_person",
+    ]);
 
   // Edge: person_likes_message
   if (
     nodeLabels.includes(NodeLabel.PERSON) &&
     nodeLabels.includes(NodeLabel.MESSAGE)
   )
-    edgeFunctions.push(getPersonLikesMessageEdgeCount);
+    edgeFunctions.push([
+      getPersonLikesMessageEdgeCount,
+      "person_likes_message",
+    ]);
 
   // Edge: person_studyat_university
   if (
     nodeLabels.includes(NodeLabel.PERSON) &&
     nodeLabels.includes(NodeLabel.UNIVERSITY)
   )
-    edgeFunctions.push(getPersonStudyAtUniversityEdgeCount);
+    edgeFunctions.push([
+      getPersonStudyAtUniversityEdgeCount,
+      "person_studyat_university",
+    ]);
 
   // Edge: person_workat_company
   if (
     nodeLabels.includes(NodeLabel.PERSON) &&
     nodeLabels.includes(NodeLabel.COMPANY)
   )
-    edgeFunctions.push(getPersonWorkAtCompanyEdgeCount);
+    edgeFunctions.push([
+      getPersonWorkAtCompanyEdgeCount,
+      "person_workat_company",
+    ]);
 
   // Edge: tag_hastype_tc
   if (
     nodeLabels.includes(NodeLabel.TAG) &&
     nodeLabels.includes(NodeLabel.TAGCLASS)
   )
-    edgeFunctions.push(getTagHasTypeTagclassEdgeCount);
+    edgeFunctions.push([
+      getTagHasTypeTagclassEdgeCount,
+      "tag_hastype_tc",
+    ]);
 
   // Edge: tc_issubclassof_tc
   if (nodeLabels.includes(NodeLabel.TAGCLASS))
-    edgeFunctions.push(
-      getTagclassIsSubclassOfTagclassEdgeCount
-    );
+    edgeFunctions.push([
+      getTagclassIsSubclassOfTagclassEdgeCount,
+      "tc_issubclassof_tc",
+    ]);
 
   return edgeFunctions;
 };
@@ -131,7 +181,7 @@ async function getCityIsPartOfCountryEdgeCount(sql: Sql) {
       RETURN count(n1.vertex_id) as count
     $$) as (count bigint);`;
 
-  return count[0].count as number;
+  return Number(count[0].count);
 }
 
 async function getCountryIsPartOfContinentEdgeCount(
@@ -144,7 +194,7 @@ async function getCountryIsPartOfContinentEdgeCount(
       RETURN count(n1.vertex_id) as count
     $$) as (count bigint);`;
 
-  return count[0].count as number;
+  return Number(count[0].count);
 }
 
 async function getForumContainerOfMessageEdgeCount(
@@ -157,7 +207,7 @@ async function getForumContainerOfMessageEdgeCount(
       RETURN count(n1.vertex_id) as count
     $$) as (count bigint);`;
 
-  return count[0].count as number;
+  return Number(count[0].count);
 }
 
 async function getForumHasMemberPersonEdgeCount(sql: Sql) {
@@ -168,7 +218,7 @@ async function getForumHasMemberPersonEdgeCount(sql: Sql) {
       RETURN count(n1.vertex_id) as count
     $$) as (count bigint);`;
 
-  return count[0].count as number;
+  return Number(count[0].count);
 }
 
 async function getForumHasModeratorPersonEdgeCount(
@@ -181,7 +231,7 @@ async function getForumHasModeratorPersonEdgeCount(
       RETURN count(n1.vertex_id) as count
     $$) as (count bigint);`;
 
-  return count[0].count as number;
+  return Number(count[0].count);
 }
 
 async function getForumHasTagTagEdgeCount(sql: Sql) {
@@ -192,7 +242,7 @@ async function getForumHasTagTagEdgeCount(sql: Sql) {
       RETURN count(n1.vertex_id) as count
     $$) as (count bigint);`;
 
-  return count[0].count as number;
+  return Number(count[0].count);
 }
 
 async function getMessageHasCreatorPersonEdgeCount(
@@ -205,7 +255,7 @@ async function getMessageHasCreatorPersonEdgeCount(
       RETURN count(n1.vertex_id) as count
     $$) as (count bigint);`;
 
-  return count[0].count as number;
+  return Number(count[0].count);
 }
 
 async function getMessageHasTagTagEdgeCount(sql: Sql) {
@@ -216,7 +266,7 @@ async function getMessageHasTagTagEdgeCount(sql: Sql) {
       RETURN count(n1.vertex_id) as count
     $$) as (count bigint);`;
 
-  return count[0].count as number;
+  return Number(count[0].count);
 }
 
 async function getMessageReplyOfMessageEdgeCount(sql: Sql) {
@@ -227,7 +277,7 @@ async function getMessageReplyOfMessageEdgeCount(sql: Sql) {
       RETURN count(n1.vertex_id) as count
     $$) as (count bigint);`;
 
-  return count[0].count as number;
+  return Number(count[0].count);
 }
 
 async function getPersonHasInterestTagEdgeCount(sql: Sql) {
@@ -238,7 +288,7 @@ async function getPersonHasInterestTagEdgeCount(sql: Sql) {
       RETURN count(n1.vertex_id) as count
     $$) as (count bigint);`;
 
-  return count[0].count as number;
+  return Number(count[0].count);
 }
 
 async function getPersonIsLocatedInCityEdgeCount(sql: Sql) {
@@ -249,7 +299,7 @@ async function getPersonIsLocatedInCityEdgeCount(sql: Sql) {
       RETURN count(n1.vertex_id) as count
     $$) as (count bigint);`;
 
-  return count[0].count as number;
+  return Number(count[0].count);
 }
 
 async function getPersonKnowsPersonEdgeCount(sql: Sql) {
@@ -260,7 +310,7 @@ async function getPersonKnowsPersonEdgeCount(sql: Sql) {
       RETURN count(n1.vertex_id) as count
     $$) as (count bigint);`;
 
-  return count[0].count as number;
+  return Number(count[0].count);
 }
 
 async function getPersonLikesMessageEdgeCount(sql: Sql) {
@@ -271,7 +321,7 @@ async function getPersonLikesMessageEdgeCount(sql: Sql) {
       RETURN count(n1.vertex_id) as count
     $$) as (count bigint);`;
 
-  return count[0].count as number;
+  return Number(count[0].count);
 }
 
 async function getPersonStudyAtUniversityEdgeCount(
@@ -284,7 +334,7 @@ async function getPersonStudyAtUniversityEdgeCount(
       RETURN count(n1.vertex_id) as count
     $$) as (count bigint);`;
 
-  return count[0].count as number;
+  return Number(count[0].count);
 }
 
 async function getPersonWorkAtCompanyEdgeCount(sql: Sql) {
@@ -295,7 +345,7 @@ async function getPersonWorkAtCompanyEdgeCount(sql: Sql) {
       RETURN count(n1.vertex_id) as count
     $$) as (count bigint);`;
 
-  return count[0].count as number;
+  return Number(count[0].count);
 }
 
 async function getTagHasTypeTagclassEdgeCount(sql: Sql) {
@@ -306,7 +356,7 @@ async function getTagHasTypeTagclassEdgeCount(sql: Sql) {
       RETURN count(n1.vertex_id) as count
     $$) as (count bigint);`;
 
-  return count[0].count as number;
+  return Number(count[0].count);
 }
 
 async function getTagclassIsSubclassOfTagclassEdgeCount(
@@ -319,5 +369,5 @@ async function getTagclassIsSubclassOfTagclassEdgeCount(
       RETURN count(n1.vertex_id) as count
     $$) as (count bigint);`;
 
-  return count[0].count as number;
+  return Number(count[0].count);
 }

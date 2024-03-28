@@ -15,6 +15,7 @@ import {
   getCytoscapeElementsCircle,
   getCytosnapImage,
   getElementsByNodeSampling,
+  getElementsByEdgeSampling,
 } from "./elements";
 import {
   getCityNodes,
@@ -57,6 +58,27 @@ app.get(
     console.log("elements: ", elements.length);
 
     const cy = getCytoscapeElements(elements, clusters);
+    console.log("end");
+    const results = getCyElements(cy);
+
+    res.send(results);
+  }
+);
+
+app.get(
+  "/graph/edge-sample",
+  async (req: Request, res: Response) => {
+    const sql = await getSql(req);
+    const labels = req.query.labels as NodeLabel[];
+
+    const { elements } = await getElementsByEdgeSampling(
+      sql,
+      labels,
+      0.001
+    );
+    console.log("elements: ", elements.length);
+
+    const cy = getCytoscapeElements(elements);
     console.log("end");
     const results = getCyElements(cy);
 
