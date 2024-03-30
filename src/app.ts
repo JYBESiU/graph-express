@@ -18,7 +18,6 @@ import {
   getElementsByEdgeSampling,
 } from "./elements";
 import {
-  getCityNodes,
   getPersonKnowsPersonEdgesNoLimit,
   getPersonNodesNoLimit,
 } from "./sql";
@@ -54,7 +53,7 @@ app.get(
     const labels = req.query.labels as NodeLabel[];
 
     const { elements, clusters } =
-      await getElementsByNodeSampling(sql, labels, 0.002);
+      await getElementsByNodeSampling(sql, labels, 0.005);
     console.log("elements: ", elements.length);
 
     const cy = getCytoscapeElements(elements, clusters);
@@ -74,7 +73,7 @@ app.get(
     const { elements } = await getElementsByEdgeSampling(
       sql,
       labels,
-      0.0001
+      0.001
     );
     console.log("elements: ", elements.length);
 
