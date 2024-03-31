@@ -141,16 +141,26 @@ export async function getElementsByEdgeSampling(
     (acc, curr) => acc + curr,
     0
   );
-  console.log("totalCounts: ", totalCounts);
+
   const totalToBeReducedNum = Math.floor(
     totalCounts * (1 - samplingRate)
   );
 
-  const nodes: ElementDefinition[] = [];
-  const edges = [];
-  const edgeFunctions = getEdgeFunctionsByNodes(nodeLables);
-  for (const [edgeFunction, _, __, name] of edgeFunctions) {
-    console.log(name);
+  console.log(
+    "random edge : ",
+    totalCounts - totalToBeReducedNum
+  );
+
+  // get nodes by edge sampling
+  const nodes: { [x: string]: ElementDefinition[] } = {};
+  const randomEdgeFunctions =
+    getEdgeFunctionsByNodes(nodeLables);
+  for (const [
+    edgeFunction,
+    _,
+    __,
+    name,
+  ] of randomEdgeFunctions) {
     const ratio = Number(
       (counts[name] / totalCounts).toFixed(10)
     );
@@ -158,8 +168,6 @@ export async function getElementsByEdgeSampling(
       totalToBeReducedNum * ratio
     );
     const reducedSize = counts[name] - toBeReduced;
-    console.log("counts: ", counts[name]);
-    console.log("reducedSize: ", reducedSize + "\n");
 
     const e = await edgeFunction(
       sql,
@@ -167,27 +175,57 @@ export async function getElementsByEdgeSampling(
       __,
       Math.max(1, reducedSize)
     );
+    e.forEach((ee) => {
+      const sourceId = ee.data.source;
+      const sourceLabel = sourceId.split("_")[0];
+      const sourceData = {
+        data: { id: sourceId, bg: getBG(sourceLabel) },
+      };
+      if (!nodes[sourceLabel]) {
+        nodes[sourceLabel] = [sourceData];
+      } else if (
+        !nodes[sourceLabel].some(
+          (node) => node.data.id === sourceId
+        )
+      ) {
+        nodes[sourceLabel].push(sourceData);
+      }
+
+      const targetId = ee.data.target;
+      const targetLabel = targetId.split("_")[0];
+      const targetData = {
+        data: { id: targetId, bg: getBG(targetLabel) },
+      };
+      if (!nodes[targetLabel]) {
+        nodes[targetLabel] = [targetData];
+      } else if (
+        !nodes[targetLabel].some(
+          (node) => node.data.id === targetId
+        )
+      ) {
+        nodes[targetLabel].push(targetData);
+      }
+    });
+  }
+
+  // get induced
+  const edges = [];
+  const edgeFunctions = getEdgeFunctionsByNodes(
+    nodeLables,
+    nodes
+  );
+  for (const [
+    edgeFunction,
+    sourceNodes,
+    targetNodes,
+  ] of edgeFunctions) {
+    const e = await edgeFunction(
+      sql,
+      sourceNodes,
+      targetNodes
+    );
+
     const eid = e.map((ee) => {
-      const source = ee.data.source;
-      const target = ee.data.target;
-
-      if (!nodes.some((node) => node.data.id === source)) {
-        nodes.push({
-          data: {
-            id: source,
-            bg: getBG(source),
-          },
-        });
-      }
-      if (!nodes.some((node) => node.data.id === target)) {
-        nodes.push({
-          data: {
-            id: target,
-            bg: getBG(target),
-          },
-        });
-      }
-
       //@ts-ignore
       ee.data.id = ee.data.source + "_" + ee.data.target;
       return ee;
@@ -195,11 +233,23 @@ export async function getElementsByEdgeSampling(
     edges.push(eid);
   }
 
-  console.log("nodes", nodes.length);
-  const elements = [...nodes, ...edges.flat()];
+  const clusters = Object.values(nodes).map((labelNodes) =>
+    labelNodes.map((node) => node.data.id!)
+  );
 
-  return { elements };
+  const elements = [
+    ...Object.values(nodes).flat(),
+    ...edges.flat(),
+  ];
+
+  console.log(
+    "nodes: ",
+    Object.values(nodes).flat().length
+  );
+  console.log("edges :", edges.flat().length);
+
+  return { elements, clusters };
 }
 
-const getBG = (id: string) =>
-  nodeColors[id.split("_")[0] as NodeLabel];
+const getBG = (label: string) =>
+  nodeColors[label as NodeLabel];

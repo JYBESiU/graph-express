@@ -70,14 +70,10 @@ app.get(
     const sql = await getSql(req);
     const labels = req.query.labels as NodeLabel[];
 
-    const { elements } = await getElementsByEdgeSampling(
-      sql,
-      labels,
-      0.001
-    );
-    console.log("elements: ", elements.length);
+    const { elements, clusters } =
+      await getElementsByEdgeSampling(sql, labels, 0.00005);
 
-    const cy = getCytoscapeElements(elements);
+    const cy = getCytoscapeElements(elements, clusters);
     console.log("end");
     const results = getCyElements(cy);
 

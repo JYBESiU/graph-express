@@ -73,5 +73,5 @@ export function getCytoscapeElementsCircle(
 const makeLayout = (clusters?: string[][]) => ({
   name: "cise",
   clusters,
-  nodeSeparation: 10,
+  nodeSeparation: 5,
 });
