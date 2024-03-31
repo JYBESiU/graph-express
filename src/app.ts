@@ -30,23 +30,6 @@ app.listen(port, function () {
 });
 
 app.get(
-  "/graph-all",
-  async (req: Request, res: Response) => {
-    const sql = await getSql(req);
-
-    const AllNodeLabels = Object.values(NodeLabel);
-    const { elements, clusters } =
-      await getElementsByNodeLabels(sql, AllNodeLabels);
-
-    const cy = getCytoscapeElements(elements, clusters);
-
-    const results = getCyElements(cy);
-
-    res.send(results);
-  }
-);
-
-app.get(
   "/graph/node-sample",
   async (req: Request, res: Response) => {
     const sql = await getSql(req);
@@ -101,9 +84,10 @@ app.get(
     const sql = await getSql(req);
     const labels = req.query.labels as NodeLabel[];
 
-    const results = await getElementsByNodeLabels(
+    const results = await getElementsByEdgeSampling(
       sql,
-      labels
+      labels,
+      0.00005
     );
 
     res.send(results);
@@ -117,10 +101,9 @@ app.get(
     const labels = req.query.labels as NodeLabel[];
 
     const { elements, clusters } =
-      await getElementsByNodeLabels(sql, labels);
+      await getElementsByEdgeSampling(sql, labels, 0.00005);
 
     const img = await getCytosnapImage(elements, clusters);
-    console.log("img : " + img);
 
     res.send({ imgUrl: img });
   }
