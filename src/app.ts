@@ -7,12 +7,11 @@ import cors from "cors";
 
 import { nodeColors, port } from "./utils/constant";
 import { getSql } from "./utils/db";
-import { NodeLabel } from "./utils/types";
+import { LayoutType, NodeLabel } from "./utils/types";
 import {
   getCyElements,
   getElementsByNodeLabels,
   getCytoscapeElements,
-  getCytoscapeElementsCircle,
   getCytosnapImage,
   getElementsByNodeSampling,
   getElementsByEdgeSampling,
@@ -36,10 +35,14 @@ app.get(
     const labels = req.query.labels as NodeLabel[];
 
     const { elements, clusters } =
-      await getElementsByNodeSampling(sql, labels, 0.005);
+      await getElementsByNodeSampling(sql, labels, 0.002);
     console.log("elements: ", elements.length);
 
-    const cy = getCytoscapeElements(elements, clusters);
+    const cy = getCytoscapeElements(
+      elements,
+      clusters,
+      LayoutType.COSE
+    );
     console.log("end");
     const results = getCyElements(cy);
 
@@ -56,7 +59,11 @@ app.get(
     const { elements, clusters } =
       await getElementsByEdgeSampling(sql, labels, 0.00005);
 
-    const cy = getCytoscapeElements(elements, clusters);
+    const cy = getCytoscapeElements(
+      elements,
+      clusters,
+      LayoutType.SPREAD
+    );
     console.log("end");
     const results = getCyElements(cy);
 
@@ -109,23 +116,23 @@ app.get(
   }
 );
 
-app.get(
-  "/graph/person",
-  async (req: Request, res: Response) => {
-    const sql = await getSql(req);
+// app.get(
+//   "/graph/person",
+//   async (req: Request, res: Response) => {
+//     const sql = await getSql(req);
 
-    const n = await getPersonNodesNoLimit(sql);
-    const e = await getPersonKnowsPersonEdgesNoLimit(sql);
+//     const n = await getPersonNodesNoLimit(sql);
+//     const e = await getPersonKnowsPersonEdgesNoLimit(sql);
 
-    const elements = [...n, ...e];
+//     const elements = [...n, ...e];
 
-    const cy = getCytoscapeElementsCircle(elements);
-    const results = getCyElements(cy);
-    console.log("results: ", results.length);
+//     const cy = getCytoscapeElements(elements);
+//     const results = getCyElements(cy);
+//     console.log("results: ", results.length);
 
-    res.send(results);
-  }
-);
+//     res.send(results);
+//   }
+// );
 
 app.get(
   "/node-types",

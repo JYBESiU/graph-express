@@ -111,7 +111,12 @@ export async function getElementsByNodeSampling(
     });
     edges.push(eid);
   }
-  console.log(edges.flat().length);
+
+  console.log(
+    "nodes: ",
+    Object.values(nodes).flat().length
+  );
+  console.log("edges: ", edges.flat().length);
 
   const elements = [
     ...Object.values(nodes).flat(),
@@ -147,7 +152,7 @@ export async function getElementsByEdgeSampling(
   );
 
   console.log(
-    "random edge : ",
+    "random edge: ",
     totalCounts - totalToBeReducedNum
   );
 
@@ -246,7 +251,7 @@ export async function getElementsByEdgeSampling(
     "nodes: ",
     Object.values(nodes).flat().length
   );
-  console.log("edges :", edges.flat().length);
+  console.log("edges:", edges.flat().length);
 
   return { elements, clusters };
 }

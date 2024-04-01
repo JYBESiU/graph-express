@@ -11,6 +11,18 @@ export enum NodeLabel {
   UNIVERSITY = "university",
 }
 
+export enum LayoutType {
+  RANDOM = "random",
+  CIRCLE = "circle",
+  CONCENTRIC = "concentric",
+  BREADTHFIRST = "breadthfirst",
+  COSE = "cose",
+  FCOSE = "fcose",
+  CISE = "cise",
+  EULER = "euler",
+  SPREAD = "spread",
+}
+
 // TODO: 만들어서 selector 함수 고치기
 export enum EdgeLabel {}
 // city_ispartof_country 1343
