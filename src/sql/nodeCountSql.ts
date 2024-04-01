@@ -2,7 +2,7 @@ import { Sql } from "postgres";
 
 import { NodeLabel } from "../utils/types";
 
-export const getNodeCountMaps = {
+export const getNodeCountFunctionsMap = {
   [NodeLabel.CITY]: getCityNodeCount,
   [NodeLabel.COMPANY]: getCompanyNodeCount,
   [NodeLabel.CONTINENT]: getContinentNodeCount,

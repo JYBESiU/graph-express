@@ -2,10 +2,9 @@ import { Core, ElementDefinition } from "cytoscape";
 import { Sql } from "postgres";
 
 import {
-  getNodesMaps,
+  getNodesFunctionsMap,
   getEdgeFunctionsByNodes,
-  getNodeCountMaps,
-  getEdgeCountFunctionsByNodes,
+  getNodeCountFunctionsMap,
 } from "../sql";
 import { NodeLabel } from "../utils/types";
 import { nodeColors } from "../utils/constant";
@@ -17,7 +16,7 @@ export async function getElementsByNodeLabels(
   const clusters = [];
   const nodes = [];
   for (const nodeLabel of nodeLables) {
-    const n = await getNodesMaps[nodeLabel](sql);
+    const n = await getNodesFunctionsMap[nodeLabel](sql);
     nodes.push(n);
     clusters.push(n.map((node) => node.data.id));
   }
@@ -58,7 +57,9 @@ export async function getElementsByNodeSampling(
 ) {
   const counts: { [x: string]: number } = {};
   for (const nodeLabel of nodeLables) {
-    const count = await getNodeCountMaps[nodeLabel](sql);
+    const count = await getNodeCountFunctionsMap[nodeLabel](
+      sql
+    );
     counts[nodeLabel] = Number(count);
   }
   const totalCounts = Object.values(counts).reduce(
@@ -80,10 +81,9 @@ export async function getElementsByNodeSampling(
     );
     const reducedSize = counts[nodeLabel] - toBeReduced;
 
-    const resultNodes = await getNodesMaps[nodeLabel](
-      sql,
-      Math.max(1, reducedSize)
-    );
+    const resultNodes = await getNodesFunctionsMap[
+      nodeLabel
+    ](sql, Math.max(1, reducedSize));
     nodes[nodeLabel] = resultNodes;
     clusters.push(resultNodes.map((node) => node.data.id));
   }
