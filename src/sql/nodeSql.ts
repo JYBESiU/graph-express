@@ -16,10 +16,7 @@ export const getNodesMaps = {
   [NodeLabel.UNIVERSITY]: getUniversityNodes,
 };
 
-export async function getCityNodes(
-  sql: Sql,
-  size?: number
-) {
+async function getCityNodes(sql: Sql, size?: number) {
   const nodes = await sql`
   SELECT *, ${nodeColors[NodeLabel.CITY]} as bg
   FROM cypher($$
