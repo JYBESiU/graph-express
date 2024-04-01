@@ -1,214 +1,40 @@
 import { Sql } from "postgres";
 import { ElementDefinition } from "cytoscape";
 
-import { NodeLabel } from "../utils/types";
+import { EdgeLabel } from "../utils/types";
 
-type GetEdgeFunctionType =
-  typeof getCityIsPartOfCountryEdges;
-
-export const getEdgeFunctionsByNodes = (
-  nodeLabels: NodeLabel[],
-  nodes?: { [x: string]: ElementDefinition[] }
-) => {
-  const edgeFunctions: [
-    GetEdgeFunctionType,
-    ElementDefinition[] | undefined,
-    ElementDefinition[] | undefined,
-    string
-  ][] = [];
-
-  // Edge: city_ispartof_country
-  if (
-    nodeLabels.includes(NodeLabel.CITY) &&
-    nodeLabels.includes(NodeLabel.COUNTRY)
-  )
-    edgeFunctions.push([
-      getCityIsPartOfCountryEdges,
-      nodes?.[NodeLabel.CITY],
-      nodes?.[NodeLabel.COUNTRY],
-      "city_ispartof_country",
-    ]);
-
-  // Edge: country_ispartof_continent
-  if (
-    nodeLabels.includes(NodeLabel.COUNTRY) &&
-    nodeLabels.includes(NodeLabel.CONTINENT)
-  )
-    edgeFunctions.push([
-      getCountryIsPartOfContinentEdges,
-      nodes?.[NodeLabel.COUNTRY],
-      nodes?.[NodeLabel.CONTINENT],
-      "country_ispartof_continent",
-    ]);
-
-  // Edge: forum_containerof_message
-  if (
-    nodeLabels.includes(NodeLabel.FORUM) &&
-    nodeLabels.includes(NodeLabel.MESSAGE)
-  )
-    edgeFunctions.push([
-      getForumContainerOfMessageEdges,
-      nodes?.[NodeLabel.FORUM],
-      nodes?.[NodeLabel.MESSAGE],
-      "forum_containerof_message",
-    ]);
-
-  // Edge: forum_hasmember_person
-  // Edge: forum_hasmoderator_person
-  if (
-    nodeLabels.includes(NodeLabel.FORUM) &&
-    nodeLabels.includes(NodeLabel.PERSON)
-  ) {
-    edgeFunctions.push([
-      getForumHasMemberPersonEdges,
-      nodes?.[NodeLabel.FORUM],
-      nodes?.[NodeLabel.PERSON],
-      "forum_hasmember_person",
-    ]);
-    edgeFunctions.push([
-      getForumHasModeratorPersonEdges,
-      nodes?.[NodeLabel.FORUM],
-      nodes?.[NodeLabel.PERSON],
-      "forum_hasmoderator_person",
-    ]);
-  }
-
-  // Edge: forum_hastag_tag
-  if (
-    nodeLabels.includes(NodeLabel.FORUM) &&
-    nodeLabels.includes(NodeLabel.TAG)
-  )
-    edgeFunctions.push([
-      getForumHasTagTagEdges,
-      nodes?.[NodeLabel.FORUM],
-      nodes?.[NodeLabel.TAG],
-      "forum_hastag_tag",
-    ]);
-
-  // Edge: message_hascreator_person
-  if (
-    nodeLabels.includes(NodeLabel.MESSAGE) &&
-    nodeLabels.includes(NodeLabel.PERSON)
-  )
-    edgeFunctions.push([
-      getMessageHasCreatorPersonEdges,
-      nodes?.[NodeLabel.MESSAGE],
-      nodes?.[NodeLabel.PERSON],
-      "message_hascreator_person",
-    ]);
-
-  // Edge: message_hastag_tag
-  if (
-    nodeLabels.includes(NodeLabel.MESSAGE) &&
-    nodeLabels.includes(NodeLabel.TAG)
-  )
-    edgeFunctions.push([
-      getMessageHasTagTagEdges,
-      nodes?.[NodeLabel.MESSAGE],
-      nodes?.[NodeLabel.TAG],
-      "message_hastag_tag",
-    ]);
-
-  // Edge: message_replyof_message
-  if (nodeLabels.includes(NodeLabel.MESSAGE))
-    edgeFunctions.push([
-      getMessageReplyOfMessageEdges,
-      nodes?.[NodeLabel.MESSAGE],
-      nodes?.[NodeLabel.MESSAGE],
-      "message_replyof_message",
-    ]);
-
-  // Edge: person_hasinterest_tag
-  if (
-    nodeLabels.includes(NodeLabel.PERSON) &&
-    nodeLabels.includes(NodeLabel.TAG)
-  )
-    edgeFunctions.push([
-      getPersonHasInterestTagEdges,
-      nodes?.[NodeLabel.PERSON],
-      nodes?.[NodeLabel.TAG],
-      "person_hasinterest_tag",
-    ]);
-
-  // Edge: person_islocatedin_city
-  if (
-    nodeLabels.includes(NodeLabel.PERSON) &&
-    nodeLabels.includes(NodeLabel.CITY)
-  )
-    edgeFunctions.push([
-      getPersonIsLocatedInCityEdges,
-      nodes?.[NodeLabel.PERSON],
-      nodes?.[NodeLabel.CITY],
-      "person_islocatedin_city",
-    ]);
-
-  // Edge: person_knows_person
-  if (nodeLabels.includes(NodeLabel.PERSON))
-    edgeFunctions.push([
-      getPersonKnowsPersonEdges,
-      nodes?.[NodeLabel.PERSON],
-      nodes?.[NodeLabel.PERSON],
-      "person_knows_person",
-    ]);
-
-  // Edge: person_likes_message
-  if (
-    nodeLabels.includes(NodeLabel.PERSON) &&
-    nodeLabels.includes(NodeLabel.MESSAGE)
-  )
-    edgeFunctions.push([
-      getPersonLikesMessageEdges,
-      nodes?.[NodeLabel.PERSON],
-      nodes?.[NodeLabel.MESSAGE],
-      "person_likes_message",
-    ]);
-
-  // Edge: person_studyat_university
-  if (
-    nodeLabels.includes(NodeLabel.PERSON) &&
-    nodeLabels.includes(NodeLabel.UNIVERSITY)
-  )
-    edgeFunctions.push([
-      getPersonStudyAtUniversityEdges,
-      nodes?.[NodeLabel.PERSON],
-      nodes?.[NodeLabel.UNIVERSITY],
-      "person_studyat_university",
-    ]);
-
-  // Edge: person_workat_company
-  if (
-    nodeLabels.includes(NodeLabel.PERSON) &&
-    nodeLabels.includes(NodeLabel.COMPANY)
-  )
-    edgeFunctions.push([
-      getPersonWorkAtCompanyEdges,
-      nodes?.[NodeLabel.PERSON],
-      nodes?.[NodeLabel.COMPANY],
-      "person_workat_company",
-    ]);
-
-  // Edge: tag_hastype_tc
-  if (
-    nodeLabels.includes(NodeLabel.TAG) &&
-    nodeLabels.includes(NodeLabel.TAGCLASS)
-  )
-    edgeFunctions.push([
-      getTagHasTypeTagclassEdges,
-      nodes?.[NodeLabel.TAG],
-      nodes?.[NodeLabel.TAGCLASS],
-      "tag_hastype_tc",
-    ]);
-
-  // Edge: tc_issubclassof_tc
-  if (nodeLabels.includes(NodeLabel.TAGCLASS))
-    edgeFunctions.push([
-      getTagclassIsSubclassOfTagclassEdges,
-      nodes?.[NodeLabel.TAGCLASS],
-      nodes?.[NodeLabel.TAGCLASS],
-      "tc_issubclassof_tc",
-    ]);
-
-  return edgeFunctions;
+export const edgesFunctionMap = {
+  [EdgeLabel.CITY_ISPARTOF_COUNTRY]:
+    getCityIsPartOfCountryEdges,
+  [EdgeLabel.COUNTRY_ISPARTOF_CONTINENT]:
+    getCountryIsPartOfContinentEdges,
+  [EdgeLabel.FORUM_CONTAINEROF_MESSAGE]:
+    getForumContainerOfMessageEdges,
+  [EdgeLabel.FORUM_HASMEMBER_PERSON]:
+    getForumHasMemberPersonEdges,
+  [EdgeLabel.FORUM_HASMODERATOR_PERSON]:
+    getForumHasModeratorPersonEdges,
+  [EdgeLabel.FORUM_HASTAG_TAG]: getForumHasTagTagEdges,
+  [EdgeLabel.MESSAGE_HASCREATOR_PERSON]:
+    getMessageHasCreatorPersonEdges,
+  [EdgeLabel.MESSAGE_HASTAG_TAG]: getMessageHasTagTagEdges,
+  [EdgeLabel.MESSAGE_REPLYOF_MESSAGE]:
+    getMessageReplyOfMessageEdges,
+  [EdgeLabel.PERSON_HASINTEREST_TAG]:
+    getPersonHasInterestTagEdges,
+  [EdgeLabel.PERSON_ISLOCATEDIN_CITY]:
+    getPersonIsLocatedInCityEdges,
+  [EdgeLabel.PERSON_KNOWS_PERSON]:
+    getPersonKnowsPersonEdges,
+  [EdgeLabel.PERSON_LIKES_MESSAGE]:
+    getPersonLikesMessageEdges,
+  [EdgeLabel.PERSON_STUDYAT_UNIVERSITY]:
+    getPersonStudyAtUniversityEdges,
+  [EdgeLabel.PERSON_WORKAT_COMPANY]:
+    getPersonWorkAtCompanyEdges,
+  [EdgeLabel.TAG_HASTYPE_TC]: getTagHasTypeTagclassEdges,
+  [EdgeLabel.TC_ISSUBCLASSOF_TC]:
+    getTagclassIsSubclassOfTagclassEdges,
 };
 
 async function getCityIsPartOfCountryEdges(

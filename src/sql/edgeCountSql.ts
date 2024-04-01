@@ -1,176 +1,44 @@
 import { Sql } from "postgres";
-import { NodeLabel } from "../utils/types";
 
-type GetEdgeCountFunctionType =
-  typeof getCityIsPartOfCountryEdgeCount;
+import { EdgeLabel } from "../utils/types";
 
-export const getEdgeCountFunctionsByNodes = (
-  nodeLabels: NodeLabel[]
-) => {
-  const edgeFunctions: [
-    GetEdgeCountFunctionType,
-    string
-  ][] = [];
-
-  // Edge: city_ispartof_country
-  if (
-    nodeLabels.includes(NodeLabel.CITY) &&
-    nodeLabels.includes(NodeLabel.COUNTRY)
-  )
-    edgeFunctions.push([
-      getCityIsPartOfCountryEdgeCount,
-      "city_ispartof_country",
-    ]);
-
-  // Edge: country_ispartof_continent
-  if (
-    nodeLabels.includes(NodeLabel.COUNTRY) &&
-    nodeLabels.includes(NodeLabel.CONTINENT)
-  )
-    edgeFunctions.push([
-      getCountryIsPartOfContinentEdgeCount,
-      "country_ispartof_continent",
-    ]);
-
-  // Edge: forum_containerof_message
-  if (
-    nodeLabels.includes(NodeLabel.FORUM) &&
-    nodeLabels.includes(NodeLabel.MESSAGE)
-  )
-    edgeFunctions.push([
-      getForumContainerOfMessageEdgeCount,
-      "forum_containerof_message",
-    ]);
-
-  // Edge: forum_hasmember_person
-  // Edge: forum_hasmoderator_person
-  if (
-    nodeLabels.includes(NodeLabel.FORUM) &&
-    nodeLabels.includes(NodeLabel.PERSON)
-  )
-    edgeFunctions.push(
-      [
-        getForumHasMemberPersonEdgeCount,
-        "forum_hasmember_person",
-      ],
-      [
-        getForumHasModeratorPersonEdgeCount,
-        "forum_hasmoderator_person",
-      ]
-    );
-
-  // Edge: forum_hastag_tag
-  if (
-    nodeLabels.includes(NodeLabel.FORUM) &&
-    nodeLabels.includes(NodeLabel.TAG)
-  )
-    edgeFunctions.push([
-      getForumHasTagTagEdgeCount,
-      "forum_hastag_tag",
-    ]);
-
-  // Edge: message_hascreator_person
-  if (
-    nodeLabels.includes(NodeLabel.MESSAGE) &&
-    nodeLabels.includes(NodeLabel.PERSON)
-  )
-    edgeFunctions.push([
-      getMessageHasCreatorPersonEdgeCount,
-      "message_hascreator_person",
-    ]);
-
-  // Edge: message_hastag_tag
-  if (
-    nodeLabels.includes(NodeLabel.MESSAGE) &&
-    nodeLabels.includes(NodeLabel.TAG)
-  )
-    edgeFunctions.push([
-      getMessageHasTagTagEdgeCount,
-      "message_hastag_tag",
-    ]);
-
-  // Edge: message_replyof_message
-  if (nodeLabels.includes(NodeLabel.MESSAGE))
-    edgeFunctions.push([
-      getMessageReplyOfMessageEdgeCount,
-      "message_replyof_message",
-    ]);
-
-  // Edge: person_hasinterest_tag
-  if (
-    nodeLabels.includes(NodeLabel.PERSON) &&
-    nodeLabels.includes(NodeLabel.TAG)
-  )
-    edgeFunctions.push([
-      getPersonHasInterestTagEdgeCount,
-      "person_hasinterest_tag",
-    ]);
-
-  // Edge: person_islocatedin_city
-  if (
-    nodeLabels.includes(NodeLabel.PERSON) &&
-    nodeLabels.includes(NodeLabel.CITY)
-  )
-    edgeFunctions.push([
-      getPersonIsLocatedInCityEdgeCount,
-      "person_islocatedin_city",
-    ]);
-
-  // Edge: person_knows_person
-  if (nodeLabels.includes(NodeLabel.PERSON))
-    edgeFunctions.push([
-      getPersonKnowsPersonEdgeCount,
-      "person_knows_person",
-    ]);
-
-  // Edge: person_likes_message
-  if (
-    nodeLabels.includes(NodeLabel.PERSON) &&
-    nodeLabels.includes(NodeLabel.MESSAGE)
-  )
-    edgeFunctions.push([
-      getPersonLikesMessageEdgeCount,
-      "person_likes_message",
-    ]);
-
-  // Edge: person_studyat_university
-  if (
-    nodeLabels.includes(NodeLabel.PERSON) &&
-    nodeLabels.includes(NodeLabel.UNIVERSITY)
-  )
-    edgeFunctions.push([
-      getPersonStudyAtUniversityEdgeCount,
-      "person_studyat_university",
-    ]);
-
-  // Edge: person_workat_company
-  if (
-    nodeLabels.includes(NodeLabel.PERSON) &&
-    nodeLabels.includes(NodeLabel.COMPANY)
-  )
-    edgeFunctions.push([
-      getPersonWorkAtCompanyEdgeCount,
-      "person_workat_company",
-    ]);
-
-  // Edge: tag_hastype_tc
-  if (
-    nodeLabels.includes(NodeLabel.TAG) &&
-    nodeLabels.includes(NodeLabel.TAGCLASS)
-  )
-    edgeFunctions.push([
-      getTagHasTypeTagclassEdgeCount,
-      "tag_hastype_tc",
-    ]);
-
-  // Edge: tc_issubclassof_tc
-  if (nodeLabels.includes(NodeLabel.TAGCLASS))
-    edgeFunctions.push([
-      getTagclassIsSubclassOfTagclassEdgeCount,
-      "tc_issubclassof_tc",
-    ]);
-
-  return edgeFunctions;
+type CountFunction = typeof getCityIsPartOfCountryEdgeCount;
+export const edgeCountFunctionMap: {
+  [x in EdgeLabel]: CountFunction;
+} = {
+  [EdgeLabel.CITY_ISPARTOF_COUNTRY]:
+    getCityIsPartOfCountryEdgeCount,
+  [EdgeLabel.COUNTRY_ISPARTOF_CONTINENT]:
+    getCountryIsPartOfContinentEdgeCount,
+  [EdgeLabel.FORUM_CONTAINEROF_MESSAGE]:
+    getForumContainerOfMessageEdgeCount,
+  [EdgeLabel.FORUM_HASMEMBER_PERSON]:
+    getForumHasMemberPersonEdgeCount,
+  [EdgeLabel.FORUM_HASMODERATOR_PERSON]:
+    getForumHasModeratorPersonEdgeCount,
+  [EdgeLabel.FORUM_HASTAG_TAG]: getForumHasTagTagEdgeCount,
+  [EdgeLabel.MESSAGE_HASCREATOR_PERSON]:
+    getMessageHasCreatorPersonEdgeCount,
+  [EdgeLabel.MESSAGE_HASTAG_TAG]:
+    getMessageHasTagTagEdgeCount,
+  [EdgeLabel.MESSAGE_REPLYOF_MESSAGE]:
+    getMessageReplyOfMessageEdgeCount,
+  [EdgeLabel.PERSON_HASINTEREST_TAG]:
+    getPersonHasInterestTagEdgeCount,
+  [EdgeLabel.PERSON_ISLOCATEDIN_CITY]:
+    getPersonIsLocatedInCityEdgeCount,
+  [EdgeLabel.PERSON_KNOWS_PERSON]:
+    getPersonKnowsPersonEdgeCount,
+  [EdgeLabel.PERSON_LIKES_MESSAGE]:
+    getPersonLikesMessageEdgeCount,
+  [EdgeLabel.PERSON_STUDYAT_UNIVERSITY]:
+    getPersonStudyAtUniversityEdgeCount,
+  [EdgeLabel.PERSON_WORKAT_COMPANY]:
+    getPersonWorkAtCompanyEdgeCount,
+  [EdgeLabel.TAG_HASTYPE_TC]:
+    getTagHasTypeTagclassEdgeCount,
+  [EdgeLabel.TC_ISSUBCLASSOF_TC]:
+    getTagclassIsSubclassOfTagclassEdgeCount,
 };
 
 async function getCityIsPartOfCountryEdgeCount(sql: Sql) {

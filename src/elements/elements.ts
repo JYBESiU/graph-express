@@ -2,12 +2,28 @@ import { Core, ElementDefinition } from "cytoscape";
 import { Sql } from "postgres";
 
 import {
-  getNodesFunctionsMap,
-  getEdgeFunctionsByNodes,
-  getNodeCountFunctionsMap,
+  nodesFunctionMap,
+  nodeCountFunctionMap,
+  edgesFunctionMap,
+  edgeCountFunctionMap,
 } from "../sql";
 import { NodeLabel } from "../utils/types";
 import { nodeColors } from "../utils/constant";
+import {
+  getEdgeLablesByNodeLabels,
+  getNodeLabelsByEdgeLabel,
+} from "../utils/util";
+
+export function getCyElements(cy: Core) {
+  //@ts-ignore
+  const cyElements = cy.json().elements;
+  const results = [
+    ...(cyElements.nodes || []),
+    ...(cyElements.edges || []),
+  ];
+
+  return results;
+}
 
 export async function getElementsByNodeLabels(
   sql: Sql,
@@ -16,15 +32,15 @@ export async function getElementsByNodeLabels(
   const clusters = [];
   const nodes = [];
   for (const nodeLabel of nodeLables) {
-    const n = await getNodesFunctionsMap[nodeLabel](sql);
+    const n = await nodesFunctionMap[nodeLabel](sql);
     nodes.push(n);
     clusters.push(n.map((node) => node.data.id));
   }
 
   const edges = [];
-  const edgeFunctions = getEdgeFunctionsByNodes(nodeLables);
-  for (const [edgeFunction] of edgeFunctions) {
-    const e = await edgeFunction(sql);
+  const edgeLabels = getEdgeLablesByNodeLabels(nodeLables);
+  for (const edgeLabel of edgeLabels) {
+    const e = await edgesFunctionMap[edgeLabel](sql);
     const eid = e.map((ee) => {
       //@ts-ignore
       ee.data.id = ee.data.source + "_" + ee.data.target;
@@ -38,17 +54,6 @@ export async function getElementsByNodeLabels(
   return { elements, clusters };
 }
 
-export function getCyElements(cy: Core) {
-  //@ts-ignore
-  const cyElements = cy.json().elements;
-  const results = [
-    ...(cyElements.nodes || []),
-    ...(cyElements.edges || []),
-  ];
-
-  return results;
-}
-
 // TODO: total count 부분 추출해서 미리 구해놓기, 중복 안 되게 맵 저장
 export async function getElementsByNodeSampling(
   sql: Sql,
@@ -57,7 +62,7 @@ export async function getElementsByNodeSampling(
 ) {
   const counts: { [x: string]: number } = {};
   for (const nodeLabel of nodeLables) {
-    const count = await getNodeCountFunctionsMap[nodeLabel](
+    const count = await nodeCountFunctionMap[nodeLabel](
       sql
     );
     counts[nodeLabel] = Number(count);
@@ -70,7 +75,6 @@ export async function getElementsByNodeSampling(
     totalCounts * (1 - samplingRate)
   );
 
-  const clusters = [];
   const nodes: { [x: string]: ElementDefinition[] } = {};
   for (const nodeLabel of nodeLables) {
     const ratio = Number(
@@ -81,27 +85,23 @@ export async function getElementsByNodeSampling(
     );
     const reducedSize = counts[nodeLabel] - toBeReduced;
 
-    const resultNodes = await getNodesFunctionsMap[
-      nodeLabel
-    ](sql, Math.max(1, reducedSize));
+    const resultNodes = await nodesFunctionMap[nodeLabel](
+      sql,
+      Math.max(1, reducedSize)
+    );
     nodes[nodeLabel] = resultNodes;
-    clusters.push(resultNodes.map((node) => node.data.id));
   }
 
+  const edgeLabels = getEdgeLablesByNodeLabels(nodeLables);
+
   const edges = [];
-  const edgeFunctions = getEdgeFunctionsByNodes(
-    nodeLables,
-    nodes
-  );
-  for (const [
-    edgeFunction,
-    sourceNodes,
-    targetNodes,
-  ] of edgeFunctions) {
-    const e = await edgeFunction(
+  for (const edgeLabel of edgeLabels) {
+    const [sourceLabel, targetLabel] =
+      getNodeLabelsByEdgeLabel(edgeLabel);
+    const e = await edgesFunctionMap[edgeLabel](
       sql,
-      sourceNodes,
-      targetNodes
+      nodes[sourceLabel],
+      nodes[targetLabel]
     );
 
     const eid = e.map((ee) => {
@@ -123,6 +123,10 @@ export async function getElementsByNodeSampling(
     ...edges.flat(),
   ];
 
+  const clusters = Object.values(nodes).map((labelNodes) =>
+    labelNodes.map((node) => node.data.id!)
+  );
+
   return { elements, clusters };
 }
 
@@ -131,22 +135,19 @@ export async function getElementsByEdgeSampling(
   nodeLables: NodeLabel[],
   samplingRate: number
 ) {
-  const edgeCountFunctions =
-    getEdgeCountFunctionsByNodes(nodeLables);
+  const edgeLabels = getEdgeLablesByNodeLabels(nodeLables);
 
   const counts: { [x: string]: number } = {};
-  for (const [
-    edgeCountFunction,
-    name,
-  ] of edgeCountFunctions) {
-    const count = await edgeCountFunction(sql);
-    counts[name] = count;
+  for (const edgeLabel of edgeLabels) {
+    const count = await edgeCountFunctionMap[edgeLabel](
+      sql
+    );
+    counts[edgeLabel] = count;
   }
   const totalCounts = Object.values(counts).reduce(
     (acc, curr) => acc + curr,
     0
   );
-
   const totalToBeReducedNum = Math.floor(
     totalCounts * (1 - samplingRate)
   );
@@ -158,33 +159,28 @@ export async function getElementsByEdgeSampling(
 
   // get nodes by edge sampling
   const nodes: { [x: string]: ElementDefinition[] } = {};
-  const randomEdgeFunctions =
-    getEdgeFunctionsByNodes(nodeLables);
-  for (const [
-    edgeFunction,
-    _,
-    __,
-    name,
-  ] of randomEdgeFunctions) {
-    const ratio = Number(
-      (counts[name] / totalCounts).toFixed(10)
-    );
+  for (const edgeLabel of edgeLabels) {
     const toBeReduced = Math.floor(
-      totalToBeReducedNum * ratio
+      totalToBeReducedNum *
+        Number(
+          (counts[edgeLabel] / totalCounts).toFixed(10)
+        )
     );
-    const reducedSize = counts[name] - toBeReduced;
+    const reducedSize = counts[edgeLabel] - toBeReduced;
 
-    const e = await edgeFunction(
+    const e = await edgesFunctionMap[edgeLabel](
       sql,
-      _,
-      __,
+      undefined,
+      undefined,
       Math.max(1, reducedSize)
     );
     e.forEach((ee) => {
       const sourceId = ee.data.source;
-      const sourceLabel = sourceId.split("_")[0];
+      const sourceLabel = sourceId.split(
+        "_"
+      )[0] as NodeLabel;
       const sourceData = {
-        data: { id: sourceId, bg: getBG(sourceLabel) },
+        data: { id: sourceId, bg: nodeColors[sourceLabel] },
       };
       if (!nodes[sourceLabel]) {
         nodes[sourceLabel] = [sourceData];
@@ -197,9 +193,11 @@ export async function getElementsByEdgeSampling(
       }
 
       const targetId = ee.data.target;
-      const targetLabel = targetId.split("_")[0];
+      const targetLabel = targetId.split(
+        "_"
+      )[0] as NodeLabel;
       const targetData = {
-        data: { id: targetId, bg: getBG(targetLabel) },
+        data: { id: targetId, bg: nodeColors[targetLabel] },
       };
       if (!nodes[targetLabel]) {
         nodes[targetLabel] = [targetData];
@@ -215,19 +213,13 @@ export async function getElementsByEdgeSampling(
 
   // get induced
   const edges = [];
-  const edgeFunctions = getEdgeFunctionsByNodes(
-    nodeLables,
-    nodes
-  );
-  for (const [
-    edgeFunction,
-    sourceNodes,
-    targetNodes,
-  ] of edgeFunctions) {
-    const e = await edgeFunction(
+  for (const edgeLabel of edgeLabels) {
+    const [sourceLabel, targetLabel] =
+      getNodeLabelsByEdgeLabel(edgeLabel);
+    const e = await edgesFunctionMap[edgeLabel](
       sql,
-      sourceNodes,
-      targetNodes
+      nodes[sourceLabel],
+      nodes[targetLabel]
     );
 
     const eid = e.map((ee) => {
@@ -238,23 +230,20 @@ export async function getElementsByEdgeSampling(
     edges.push(eid);
   }
 
-  const clusters = Object.values(nodes).map((labelNodes) =>
-    labelNodes.map((node) => node.data.id!)
-  );
-
-  const elements = [
-    ...Object.values(nodes).flat(),
-    ...edges.flat(),
-  ];
-
   console.log(
     "nodes: ",
     Object.values(nodes).flat().length
   );
   console.log("edges:", edges.flat().length);
 
+  const elements = [
+    ...Object.values(nodes).flat(),
+    ...edges.flat(),
+  ];
+
+  const clusters = Object.values(nodes).map((labelNodes) =>
+    labelNodes.map((node) => node.data.id!)
+  );
+
   return { elements, clusters };
 }
-
-const getBG = (label: string) =>
-  nodeColors[label as NodeLabel];
