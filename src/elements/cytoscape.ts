@@ -18,6 +18,8 @@ import euler from "cytoscape-euler";
 import fcose from "cytoscape-fcose";
 //@ts-ignore
 import spread from "cytoscape-spread";
+//@ts-ignore
+import dagre from "cytoscape-dagre";
 
 import style from "./cy-style.json";
 import { LayoutType } from "../utils/types";
@@ -27,10 +29,11 @@ cytoscape.use(fcose);
 cytoscape.use(euler);
 cytoscape.use(cise);
 cytoscape.use(spread);
+cytoscape.use(dagre);
 
 cytosnap.use(["cytoscape-cise"]);
 
-export function getCytoscapeElements(
+export function getCytoscape(
   elements: ElementDefinition[],
   clusters?: string[][],
   layoutName?: LayoutType
@@ -87,6 +90,8 @@ const makeLayout = (
       return eulerLayout;
     case LayoutType.SPREAD:
       return spreadLayout;
+    case LayoutType.DAGRE:
+      return dagreLayout;
     case LayoutType.CISE:
       return makeCiseLayout(clusters);
 
@@ -97,6 +102,7 @@ const makeLayout = (
 
 const randomLayout: RandomLayoutOptions = {
   name: "random",
+  boundingBox: { x1: 0, y1: 0, w: 300, h: 300 },
 };
 
 const circleLayout: CircleLayoutOptions = {
@@ -123,7 +129,7 @@ const coseLayout: CoseLayoutOptions = {
   name: "cose",
   animate: false,
   randomize: true,
-  componentSpacing: 50,
+  componentSpacing: 100,
   nodeRepulsion: (node) => 10000,
   idealEdgeLength: (edge) => 64,
 };
@@ -146,6 +152,15 @@ const spreadLayout = {
   name: "spread",
   animate: false,
   prelayout: coseLayout,
+};
+
+const dagreLayout = {
+  name: "dagre",
+  nodeSep: 15,
+  edgeSep: 25,
+  rankSep: 15,
+  align: "DL",
+  rankDir: "TB",
 };
 
 const makeCiseLayout = (clusters?: string[][]) => ({

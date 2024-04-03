@@ -1,4 +1,5 @@
 import { NodeLabel } from "./types";
+
 export const port = 3001;
 
 export const nodeColors = {

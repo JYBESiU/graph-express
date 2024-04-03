@@ -11,15 +11,16 @@ import { LayoutType, NodeLabel } from "./utils/types";
 import {
   getCyElements,
   getElementsByNodeLabels,
-  getCytoscapeElements,
+  getCytoscape,
   getCytosnapImage,
   getElementsByNodeSampling,
   getElementsByEdgeSampling,
 } from "./elements";
+
 import {
-  getPersonKnowsPersonEdgesNoLimit,
-  getPersonNodesNoLimit,
-} from "./sql";
+  getEdgeLablesByNodeLabels,
+  getNodeLabelsByEdgeLabel,
+} from "./utils/util";
 
 const app: Application = express();
 app.use(cors());
@@ -38,7 +39,7 @@ app.get(
       await getElementsByNodeSampling(sql, labels, 0.002);
     console.log("elements: ", elements.length);
 
-    const cy = getCytoscapeElements(
+    const cy = getCytoscape(
       elements,
       clusters,
       LayoutType.COSE
@@ -57,12 +58,12 @@ app.get(
     const labels = req.query.labels as NodeLabel[];
 
     const { elements, clusters } =
-      await getElementsByEdgeSampling(sql, labels, 0.00005);
+      await getElementsByEdgeSampling(sql, labels, 0.00001);
 
-    const cy = getCytoscapeElements(
+    const cy = getCytoscape(
       elements,
       clusters,
-      LayoutType.SPREAD
+      LayoutType.CISE
     );
     console.log("end");
     const results = getCyElements(cy);
@@ -78,7 +79,7 @@ app.get("/graph", async (req: Request, res: Response) => {
   const { elements, clusters } =
     await getElementsByNodeLabels(sql, labels);
 
-  const cy = getCytoscapeElements(elements, clusters);
+  const cy = getCytoscape(elements, clusters);
 
   const results = getCyElements(cy);
 
@@ -147,5 +148,71 @@ app.get(
     // TODO: node count 추가
 
     res.send(nodeTypes);
+  }
+);
+
+// TODO: schema layout 만들어서 보내주기
+app.get(
+  "/table-schema",
+  async (req: Request, res: Response) => {
+    const labels = req.query.labels as NodeLabel[];
+    const selectedNodes = labels.map((label) => ({
+      data: { id: label },
+    }));
+
+    const edgeLabels = getEdgeLablesByNodeLabels(labels);
+    const edges = edgeLabels.map((edgeLabel) => {
+      const [source, target] =
+        getNodeLabelsByEdgeLabel(edgeLabel);
+
+      return {
+        data: {
+          id: edgeLabel,
+          source,
+          target,
+        },
+      };
+    });
+
+    const elements = [...selectedNodes, ...edges];
+    const cy = getCytoscape(
+      elements,
+      undefined,
+      LayoutType.DAGRE
+    );
+    const cyElements = getCyElements(cy);
+
+    const nodeSchema = cyElements
+      .filter((e) => e.group === "nodes")
+      .map((e) => ({
+        id: e.data.id,
+        position: {
+          x: e.position.x * 10,
+          y: e.position.y * 10,
+        },
+        data: {
+          label: e.data.id.toUpperCase(),
+        },
+        style: {
+          backgroundColor:
+            nodeColors[e.data.id as NodeLabel],
+          fontWeight: 600,
+        },
+        type: "custom",
+      }));
+    const edgeSchema = cyElements
+      .filter((e) => e.group === "edges")
+      .map((e) => ({
+        ...e.data,
+        label: e.data.id,
+        type:
+          e.data.source === e.data.target
+            ? "selfConnect"
+            : "bezier",
+      }));
+    console.log("nodeSchema :", nodeSchema);
+    console.log("edgeSchema :", edgeSchema);
+
+    res.send({ nodeSchema, edgeSchema });
   }
 );
