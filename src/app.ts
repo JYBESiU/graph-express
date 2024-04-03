@@ -21,6 +21,7 @@ import {
   getEdgeLablesByNodeLabels,
   getNodeLabelsByEdgeLabel,
 } from "./utils/util";
+import { getNodeData, nodeCountFunctionMap } from "./sql";
 
 const app: Application = express();
 app.use(cors());
@@ -109,9 +110,13 @@ app.get(
     const labels = req.query.labels as NodeLabel[];
 
     const { elements, clusters } =
-      await getElementsByEdgeSampling(sql, labels, 0.00005);
+      await getElementsByEdgeSampling(sql, labels, 0.00001);
 
-    const img = await getCytosnapImage(elements, clusters);
+    const img = await getCytosnapImage(
+      elements,
+      clusters,
+      LayoutType.CIRCLE
+    );
 
     res.send({ imgUrl: img });
   }
@@ -192,11 +197,7 @@ app.get(
         },
         data: {
           label: e.data.id.toUpperCase(),
-        },
-        style: {
-          backgroundColor:
-            nodeColors[e.data.id as NodeLabel],
-          fontWeight: 600,
+          bg: nodeColors[e.data.id as NodeLabel],
         },
         type: "custom",
       }));
@@ -210,9 +211,37 @@ app.get(
             ? "selfConnect"
             : "bezier",
       }));
-    console.log("nodeSchema :", nodeSchema);
-    console.log("edgeSchema :", edgeSchema);
+    // console.log("nodeSchema :", nodeSchema);
+    // console.log("edgeSchema :", edgeSchema);
 
     res.send({ nodeSchema, edgeSchema });
+  }
+);
+
+app.get(
+  "/node-data",
+  async (req: Request, res: Response) => {
+    const sql = await getSql(req);
+    const label = req.query.label as NodeLabel;
+
+    const count = await nodeCountFunctionMap[label](sql);
+
+    const page = Number(req.query.page);
+    const size = Number(req.query.size);
+    const offset = page * size;
+
+    const result = await getNodeData(
+      sql,
+      NodeLabel.CITY,
+      size,
+      offset
+    );
+
+    const data = {
+      result,
+      count,
+    };
+
+    res.send(data);
   }
 );

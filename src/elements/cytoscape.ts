@@ -48,20 +48,25 @@ export function getCytoscape(
 
 export async function getCytosnapImage(
   elements: ElementDefinition[],
-  clusters: string[][]
+  clusters?: string[][],
+  layoutName?: LayoutType
 ) {
-  const snap = cytosnap();
+  const snap = cytosnap({
+    puppeteer: {
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    },
+  });
 
   await snap.start();
 
   const img = await snap.shot({
     elements,
-    layout: makeCiseLayout(clusters),
+    layout: makeLayout(layoutName, clusters),
     style,
     resolvesTo: "base64uri",
     format: "png",
-    width: 1920,
-    height: 1080,
+    width: 1280,
+    height: 720,
     background: "transparent",
   });
 
@@ -156,9 +161,9 @@ const spreadLayout = {
 
 const dagreLayout = {
   name: "dagre",
-  nodeSep: 15,
-  edgeSep: 25,
-  rankSep: 15,
+  nodeSep: 25,
+  edgeSep: 35,
+  rankSep: 30,
   align: "DL",
   rankDir: "TB",
 };

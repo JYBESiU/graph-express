@@ -3,6 +3,22 @@ import { Sql } from "postgres";
 import { NodeLabel } from "../utils/types";
 import { nodeColors } from "../utils/constant";
 
+export async function getNodeData(
+  sql: Sql,
+  label: NodeLabel,
+  size: number,
+  offset: number
+) {
+  const data = await sql`
+    SELECT *
+    FROM ${sql(`public.${label}_prop`)}
+    LIMIT ${size}
+    OFFSET ${offset}
+  `;
+
+  return data;
+}
+
 export const nodesFunctionMap = {
   [NodeLabel.CITY]: getCityNodes,
   [NodeLabel.COMPANY]: getCompanyNodes,
