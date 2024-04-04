@@ -232,7 +232,7 @@ app.get(
 
     const result = await getNodeData(
       sql,
-      NodeLabel.CITY,
+      label,
       size,
       offset
     );

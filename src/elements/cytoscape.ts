@@ -161,9 +161,9 @@ const spreadLayout = {
 
 const dagreLayout = {
   name: "dagre",
-  nodeSep: 25,
-  edgeSep: 35,
-  rankSep: 30,
+  nodeSep: 20,
+  edgeSep: 40,
+  rankSep: 40,
   align: "DL",
   rankDir: "TB",
 };
