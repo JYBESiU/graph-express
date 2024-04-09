@@ -11,10 +11,14 @@ import {
   port,
 } from "./utils/constant";
 import { getSql } from "./utils/db";
-import { LayoutType, NodeLabel } from "./utils/types";
+import {
+  EdgeLabel,
+  LayoutType,
+  NodeLabel,
+} from "./utils/types";
 import {
   getCyElements,
-  getElementsByNodeLabels,
+  getElementsByLabels,
   getCytoscape,
   getCytosnapImage,
   getElementsByNodeSampling,
@@ -88,9 +92,13 @@ app.get(
 app.get("/graph", async (req: Request, res: Response) => {
   const sql = await getSql(req);
   const nodeLabels = req.query.nodeLabels as NodeLabel[];
+  const edgeLabels = req.query.edgeLabels as EdgeLabel[];
 
-  const { elements, clusters } =
-    await getElementsByNodeLabels(sql, nodeLabels);
+  const { elements, clusters } = await getElementsByLabels(
+    sql,
+    nodeLabels,
+    edgeLabels
+  );
 
   const cy = getCytoscape(elements, clusters);
 
@@ -135,54 +143,6 @@ app.get(
     );
 
     res.send({ imgUrl: img });
-  }
-);
-
-// app.get(
-//   "/graph/person",
-//   async (req: Request, res: Response) => {
-//     const sql = await getSql(req);
-
-//     const n = await getPersonNodesNoLimit(sql);
-//     const e = await getPersonKnowsPersonEdgesNoLimit(sql);
-
-//     const elements = [...n, ...e];
-
-//     const cy = getCytoscapeElements(elements);
-//     const results = getCyElements(cy);
-//     console.log("results: ", results.length);
-
-//     res.send(results);
-//   }
-// );
-
-app.get(
-  "/node-types",
-  async (req: Request, res: Response) => {
-    const nodeTypes = Object.entries(NodeLabel).map(
-      ([_, value]) => ({
-        label: value,
-        color: nodeColors[value],
-      })
-    );
-
-    res.send(nodeTypes);
-  }
-);
-
-app.get(
-  "/edge-types",
-  async (req: Request, res: Response) => {
-    const nodeLabels = req.query.nodeLabels as NodeLabel[];
-
-    const edgeLabels =
-      getEdgeLablesByNodeLabels(nodeLabels);
-    const edgeTypes = edgeLabels.map((label) => ({
-      label,
-      color: edgeColors[label],
-    }));
-
-    res.send(edgeTypes);
   }
 );
 

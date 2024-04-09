@@ -7,7 +7,7 @@ import {
   edgesFunctionMap,
   edgeCountFunctionMap,
 } from "../sql";
-import { NodeLabel } from "../utils/types";
+import { EdgeLabel, NodeLabel } from "../utils/types";
 import { nodeColors } from "../utils/constant";
 import {
   getEdgeLablesByNodeLabels,
@@ -25,20 +25,20 @@ export function getCyElements(cy: Core) {
   return results;
 }
 
-export async function getElementsByNodeLabels(
+export async function getElementsByLabels(
   sql: Sql,
-  nodeLables: NodeLabel[]
+  nodeLabels: NodeLabel[],
+  edgeLabels: EdgeLabel[]
 ) {
   const clusters = [];
   const nodes = [];
-  for (const nodeLabel of nodeLables) {
+  for (const nodeLabel of nodeLabels) {
     const n = await nodesFunctionMap[nodeLabel](sql);
     nodes.push(n);
     clusters.push(n.map((node) => node.data.id));
   }
 
   const edges = [];
-  const edgeLabels = getEdgeLablesByNodeLabels(nodeLables);
   for (const edgeLabel of edgeLabels) {
     const e = await edgesFunctionMap[edgeLabel](sql);
     const eid = e.map((ee) => {
@@ -48,6 +48,8 @@ export async function getElementsByNodeLabels(
     });
     edges.push(eid);
   }
+  console.log("nodes: ", nodes.flat().length);
+  console.log("edges: ", edges.flat().length);
 
   const elements = [...nodes.flat(), ...edges.flat()];
 
