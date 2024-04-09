@@ -2,6 +2,7 @@ import { Sql } from "postgres";
 import { ElementDefinition } from "cytoscape";
 
 import { EdgeLabel } from "../utils/types";
+import { edgeColors } from "../utils/constant";
 
 export const edgesFunctionMap = {
   [EdgeLabel.CITY_ISPARTOF_COUNTRY]:
@@ -53,7 +54,9 @@ async function getCityIsPartOfCountryEdges(
   );
 
   const edges = await sql`
-    SELECT *
+    SELECT *, ${
+      edgeColors[EdgeLabel.CITY_ISPARTOF_COUNTRY]
+    } as bg
     FROM cypher($$
       MATCH (n1: city)-[k:city_ispartof_country]->(n2: country)
       RETURN n1.vertex_id, n2.vertex_id
@@ -73,6 +76,7 @@ async function getCityIsPartOfCountryEdges(
 
   return edges.map((edge) => ({
     data: {
+      color: edge.bg,
       source: "city_" + edge.source,
       target: "country_" + edge.target,
     },
@@ -96,7 +100,9 @@ async function getCountryIsPartOfContinentEdges(
   );
 
   const edges = await sql`
-    SELECT *
+    SELECT *, ${
+      edgeColors[EdgeLabel.COUNTRY_ISPARTOF_CONTINENT]
+    } as bg
     FROM cypher($$
       MATCH (n1: country)-[k:country_ispartof_continent]->(n2: continent)
       RETURN n1.vertex_id, n2.vertex_id
@@ -116,6 +122,7 @@ async function getCountryIsPartOfContinentEdges(
 
   return edges.map((edge) => ({
     data: {
+      color: edge.bg,
       source: "country_" + edge.source,
       target: "continent_" + edge.target,
     },
@@ -138,7 +145,9 @@ async function getForumContainerOfMessageEdges(
   );
 
   const edges = await sql`
-    SELECT *
+    SELECT *, ${
+      edgeColors[EdgeLabel.FORUM_CONTAINEROF_MESSAGE]
+    } as bg
     FROM cypher($$
       MATCH (n1: forum)-[k:forum_containerof_message]->(n2: message)
       RETURN n1.vertex_id, n2.vertex_id
@@ -158,6 +167,7 @@ async function getForumContainerOfMessageEdges(
 
   return edges.map((edge) => ({
     data: {
+      color: edge.bg,
       source: "forum_" + edge.source,
       target: "message_" + edge.target,
     },
@@ -180,7 +190,9 @@ async function getForumHasMemberPersonEdges(
   );
 
   const edges = await sql`
-    SELECT *
+    SELECT *, ${
+      edgeColors[EdgeLabel.FORUM_HASMEMBER_PERSON]
+    } as bg
     FROM cypher($$
       MATCH (n1: forum)-[k:forum_hasmember_person]->(n2: person)
       RETURN n1.vertex_id, n2.vertex_id
@@ -200,6 +212,7 @@ async function getForumHasMemberPersonEdges(
 
   return edges.map((edge) => ({
     data: {
+      color: edge.bg,
       source: "forum_" + edge.source,
       target: "person_" + edge.target,
     },
@@ -222,7 +235,9 @@ async function getForumHasModeratorPersonEdges(
   );
 
   const edges = await sql`
-    SELECT *
+    SELECT *, ${
+      edgeColors[EdgeLabel.FORUM_HASMODERATOR_PERSON]
+    } as bg
     FROM cypher($$
       MATCH (n1: forum)-[k:forum_hasmoderator_person]->(n2: person)
       RETURN n1.vertex_id, n2.vertex_id
@@ -242,6 +257,7 @@ async function getForumHasModeratorPersonEdges(
 
   return edges.map((edge) => ({
     data: {
+      color: edge.bg,
       source: "forum_" + edge.source,
       target: "person_" + edge.target,
     },
@@ -264,7 +280,9 @@ async function getForumHasTagTagEdges(
   );
 
   const edges = await sql`
-    SELECT *
+    SELECT *, ${
+      edgeColors[EdgeLabel.FORUM_HASTAG_TAG]
+    } as bg
     FROM cypher($$
       MATCH (n1: forum)-[k:forum_hastag_tag]->(n2: tag)
       RETURN n1.vertex_id, n2.vertex_id
@@ -284,6 +302,7 @@ async function getForumHasTagTagEdges(
 
   return edges.map((edge) => ({
     data: {
+      color: edge.bg,
       source: "forum_" + edge.source,
       target: "tag_" + edge.target,
     },
@@ -306,7 +325,9 @@ async function getMessageHasCreatorPersonEdges(
   );
 
   const edges = await sql`
-    SELECT *
+    SELECT *, ${
+      edgeColors[EdgeLabel.MESSAGE_HASCREATOR_PERSON]
+    } as bg
     FROM cypher($$
       MATCH (n1: message)-[k:message_hascreator_person]->(n2: person)
       RETURN n1.vertex_id, n2.vertex_id
@@ -326,6 +347,7 @@ async function getMessageHasCreatorPersonEdges(
 
   return edges.map((edge) => ({
     data: {
+      color: edge.bg,
       source: "message_" + edge.source,
       target: "person_" + edge.target,
     },
@@ -348,7 +370,9 @@ async function getMessageHasTagTagEdges(
   );
 
   const edges = await sql`
-    SELECT *
+    SELECT *, ${
+      edgeColors[EdgeLabel.MESSAGE_HASTAG_TAG]
+    } as bg
     FROM cypher($$
       MATCH (n1: message)-[k:message_hastag_tag]->(n2: tag)
       RETURN n1.vertex_id, n2.vertex_id
@@ -368,6 +392,7 @@ async function getMessageHasTagTagEdges(
 
   return edges.map((edge) => ({
     data: {
+      color: edge.bg,
       source: "message_" + edge.source,
       target: "tag_" + edge.target,
     },
@@ -391,7 +416,9 @@ async function getMessageReplyOfMessageEdges(
   );
 
   const edges = await sql`
-    SELECT *
+    SELECT *, ${
+      edgeColors[EdgeLabel.MESSAGE_REPLYOF_MESSAGE]
+    } as bg
     FROM cypher($$
       MATCH (n1: message)-[k:message_replyof_message]->(n2: message)
       RETURN n1.vertex_id, n2.vertex_id
@@ -411,6 +438,7 @@ async function getMessageReplyOfMessageEdges(
 
   return edges.map((edge) => ({
     data: {
+      color: edge.bg,
       source: "message_" + edge.source,
       target: "message_" + edge.target,
     },
@@ -433,7 +461,9 @@ async function getPersonHasInterestTagEdges(
   );
 
   const edges = await sql`
-    SELECT *
+    SELECT *, ${
+      edgeColors[EdgeLabel.PERSON_HASINTEREST_TAG]
+    } as bg
     FROM cypher($$
       MATCH (n1: person)-[k:person_hasinterest_tag]->(n2: tag)
       RETURN n1.vertex_id, n2.vertex_id
@@ -453,6 +483,7 @@ async function getPersonHasInterestTagEdges(
 
   return edges.map((edge) => ({
     data: {
+      color: edge.bg,
       source: "person_" + edge.source,
       target: "tag_" + edge.target,
     },
@@ -475,7 +506,9 @@ async function getPersonIsLocatedInCityEdges(
   );
 
   const edges = await sql`
-    SELECT *
+    SELECT *, ${
+      edgeColors[EdgeLabel.PERSON_ISLOCATEDIN_CITY]
+    } as bg
     FROM cypher($$
       MATCH (n1: person)-[k:person_islocatedin_city]->(n2: city)
       RETURN n1.vertex_id, n2.vertex_id
@@ -495,6 +528,7 @@ async function getPersonIsLocatedInCityEdges(
 
   return edges.map((edge) => ({
     data: {
+      color: edge.bg,
       source: "person_" + edge.source,
       target: "city_" + edge.target,
     },
@@ -518,7 +552,9 @@ async function getPersonKnowsPersonEdges(
   );
 
   const edges = await sql`
-    SELECT *
+    SELECT *, ${
+      edgeColors[EdgeLabel.PERSON_KNOWS_PERSON]
+    } as bg
     FROM cypher($$
       MATCH (n1: person)-[k:person_knows_person]->(n2: person)
       RETURN n1.vertex_id, n2.vertex_id
@@ -538,6 +574,7 @@ async function getPersonKnowsPersonEdges(
 
   return edges.map((edge) => ({
     data: {
+      color: edge.bg,
       source: "person_" + edge.source,
       target: "person_" + edge.target,
     },
@@ -561,7 +598,9 @@ async function getPersonLikesMessageEdges(
   );
 
   const edges = await sql`
-    SELECT *
+    SELECT *, ${
+      edgeColors[EdgeLabel.PERSON_LIKES_MESSAGE]
+    } as bg
     FROM cypher($$
       MATCH (n1: person)-[k:person_likes_message]->(n2: message)
       RETURN n1.vertex_id, n2.vertex_id
@@ -581,6 +620,7 @@ async function getPersonLikesMessageEdges(
 
   return edges.map((edge) => ({
     data: {
+      color: edge.bg,
       source: "person_" + edge.source,
       target: "message_" + edge.target,
     },
@@ -605,7 +645,9 @@ async function getPersonStudyAtUniversityEdges(
   );
 
   const edges = await sql`
-    SELECT *
+    SELECT *, ${
+      edgeColors[EdgeLabel.PERSON_STUDYAT_UNIVERSITY]
+    } as bg
     FROM cypher($$
       MATCH (n1: person)-[k:person_studyat_university]->(n2: university)
       RETURN n1.vertex_id, n2.vertex_id
@@ -625,6 +667,7 @@ async function getPersonStudyAtUniversityEdges(
 
   return edges.map((edge) => ({
     data: {
+      color: edge.bg,
       source: "person_" + edge.source,
       target: "university_" + edge.target,
     },
@@ -648,7 +691,9 @@ async function getPersonWorkAtCompanyEdges(
   );
 
   const edges = await sql`
-    SELECT *
+    SELECT *, ${
+      edgeColors[EdgeLabel.PERSON_WORKAT_COMPANY]
+    } as bg
     FROM cypher($$
       MATCH (n1: person)-[k:person_workat_company]->(n2: company)
       RETURN n1.vertex_id, n2.vertex_id
@@ -668,6 +713,7 @@ async function getPersonWorkAtCompanyEdges(
 
   return edges.map((edge) => ({
     data: {
+      color: edge.bg,
       source: "person_" + edge.source,
       target: "company_" + edge.target,
     },
@@ -691,7 +737,7 @@ async function getTagHasTypeTagclassEdges(
   );
 
   const edges = await sql`
-    SELECT *
+    SELECT *, ${edgeColors[EdgeLabel.TAG_HASTYPE_TC]} as bg
     FROM cypher($$
       MATCH (n1: tag)-[k:tag_hastype_tc]->(n2: tagclass)
       RETURN n1.vertex_id, n2.vertex_id
@@ -711,6 +757,7 @@ async function getTagHasTypeTagclassEdges(
 
   return edges.map((edge) => ({
     data: {
+      color: edge.bg,
       source: "tag_" + edge.source,
       target: "tagclass_" + edge.target,
     },
@@ -734,7 +781,9 @@ async function getTagclassIsSubclassOfTagclassEdges(
   );
 
   const edges = await sql`
-    SELECT *
+    SELECT *, ${
+      edgeColors[EdgeLabel.TC_ISSUBCLASSOF_TC]
+    } as bg
     FROM cypher($$
       MATCH (n1: tagclass)-[k:tc_issubclassof_tc]->(n2: tagclass)
       RETURN n1.vertex_id, n2.vertex_id
@@ -754,6 +803,7 @@ async function getTagclassIsSubclassOfTagclassEdges(
 
   return edges.map((edge) => ({
     data: {
+      color: edge.bg,
       source: "tagclass_" + edge.source,
       target: "tagclass_" + edge.target,
     },

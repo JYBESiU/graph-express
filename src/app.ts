@@ -5,7 +5,11 @@ import express, {
 } from "express";
 import cors from "cors";
 
-import { nodeColors, port } from "./utils/constant";
+import {
+  edgeColors,
+  nodeColors,
+  port,
+} from "./utils/constant";
 import { getSql } from "./utils/db";
 import { LayoutType, NodeLabel } from "./utils/types";
 import {
@@ -34,10 +38,14 @@ app.get(
   "/graph/node-sample",
   async (req: Request, res: Response) => {
     const sql = await getSql(req);
-    const labels = req.query.labels as NodeLabel[];
+    const nodeLabels = req.query.nodeLabels as NodeLabel[];
 
     const { elements, clusters } =
-      await getElementsByNodeSampling(sql, labels, 0.002);
+      await getElementsByNodeSampling(
+        sql,
+        nodeLabels,
+        0.002
+      );
     console.log("elements: ", elements.length);
 
     const cy = getCytoscape(
@@ -56,10 +64,14 @@ app.get(
   "/graph/edge-sample",
   async (req: Request, res: Response) => {
     const sql = await getSql(req);
-    const labels = req.query.labels as NodeLabel[];
+    const nodeLabels = req.query.nodeLabels as NodeLabel[];
 
     const { elements, clusters } =
-      await getElementsByEdgeSampling(sql, labels, 0.00001);
+      await getElementsByEdgeSampling(
+        sql,
+        nodeLabels,
+        0.0001
+      );
 
     const cy = getCytoscape(
       elements,
@@ -75,10 +87,10 @@ app.get(
 
 app.get("/graph", async (req: Request, res: Response) => {
   const sql = await getSql(req);
-  const labels = req.query.labels as NodeLabel[];
+  const nodeLabels = req.query.nodeLabels as NodeLabel[];
 
   const { elements, clusters } =
-    await getElementsByNodeLabels(sql, labels);
+    await getElementsByNodeLabels(sql, nodeLabels);
 
   const cy = getCytoscape(elements, clusters);
 
@@ -91,11 +103,11 @@ app.get(
   "/graph/client",
   async (req: Request, res: Response) => {
     const sql = await getSql(req);
-    const labels = req.query.labels as NodeLabel[];
+    const nodeLabels = req.query.nodeLabels as NodeLabel[];
 
     const results = await getElementsByEdgeSampling(
       sql,
-      labels,
+      nodeLabels,
       0.00005
     );
 
@@ -107,10 +119,14 @@ app.get(
   "/graph/image",
   async (req: Request, res: Response) => {
     const sql = await getSql(req);
-    const labels = req.query.labels as NodeLabel[];
+    const nodeLabels = req.query.nodeLabels as NodeLabel[];
 
     const { elements, clusters } =
-      await getElementsByEdgeSampling(sql, labels, 0.00001);
+      await getElementsByEdgeSampling(
+        sql,
+        nodeLabels,
+        0.00001
+      );
 
     const img = await getCytosnapImage(
       elements,
@@ -150,22 +166,37 @@ app.get(
       })
     );
 
-    // TODO: node count 추가
-
     res.send(nodeTypes);
   }
 );
 
-// TODO: schema layout 만들어서 보내주기
+app.get(
+  "/edge-types",
+  async (req: Request, res: Response) => {
+    const nodeLabels = req.query.nodeLabels as NodeLabel[];
+
+    const edgeLabels =
+      getEdgeLablesByNodeLabels(nodeLabels);
+    const edgeTypes = edgeLabels.map((label) => ({
+      label,
+      color: edgeColors[label],
+    }));
+
+    res.send(edgeTypes);
+  }
+);
+
 app.get(
   "/table-schema",
   async (req: Request, res: Response) => {
-    const labels = req.query.labels as NodeLabel[];
-    const selectedNodes = labels.map((label) => ({
+    const nodeLabels = req.query.nodeLabels as NodeLabel[];
+
+    const selectedNodes = nodeLabels.map((label) => ({
       data: { id: label },
     }));
 
-    const edgeLabels = getEdgeLablesByNodeLabels(labels);
+    const edgeLabels =
+      getEdgeLablesByNodeLabels(nodeLabels);
     const edges = edgeLabels.map((edgeLabel) => {
       const [source, target] =
         getNodeLabelsByEdgeLabel(edgeLabel);
@@ -211,8 +242,6 @@ app.get(
             ? "selfConnect"
             : "bezier",
       }));
-    // console.log("nodeSchema :", nodeSchema);
-    // console.log("edgeSchema :", edgeSchema);
 
     res.send({ nodeSchema, edgeSchema });
   }
@@ -222,9 +251,11 @@ app.get(
   "/node-data",
   async (req: Request, res: Response) => {
     const sql = await getSql(req);
-    const label = req.query.label as NodeLabel;
+    const nodeLabel = req.query.nodeLabel as NodeLabel;
 
-    const count = await nodeCountFunctionMap[label](sql);
+    const count = await nodeCountFunctionMap[nodeLabel](
+      sql
+    );
 
     const page = Number(req.query.page);
     const size = Number(req.query.size);
@@ -232,7 +263,7 @@ app.get(
 
     const result = await getNodeData(
       sql,
-      label,
+      nodeLabel,
       size,
       offset
     );
