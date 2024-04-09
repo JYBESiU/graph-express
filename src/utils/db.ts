@@ -1,7 +1,13 @@
 import { Request } from "express";
 import postgres, { Sql } from "postgres";
-import ssh2 from "ssh2";
 
+const db01Config = {
+  host: "localhost",
+  port: 5433,
+  database: "ldbcsnb_sf0.1",
+  username: "postgres",
+  password: "mysecretpassword",
+};
 const db1Config = {
   host: "localhost",
   port: 5433,
@@ -25,6 +31,11 @@ const db100Config = {
 };
 
 //@ts-ignore
+const sql01 = postgres({
+  ...db01Config,
+});
+
+//@ts-ignore
 const sql1 = postgres({
   ...db1Config,
 });
@@ -44,6 +55,7 @@ export async function getSql(req: Request) {
 
   let sql: Sql = postgres();
 
+  if (sf === "0.1") sql = sql01;
   if (sf === "1") sql = sql1;
   if (sf === "10") sql = sql10;
   if (sf === "100") sql = sql100;
