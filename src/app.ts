@@ -5,11 +5,7 @@ import express, {
 } from "express";
 import cors from "cors";
 
-import {
-  edgeColors,
-  nodeColors,
-  port,
-} from "./utils/constant";
+import { nodeColors, port } from "./utils/constant";
 import { getSql } from "./utils/db";
 import {
   EdgeLabel,
@@ -29,7 +25,11 @@ import {
   getEdgeLablesByNodeLabels,
   getNodeLabelsByEdgeLabel,
 } from "./utils/util";
-import { getNodeData, nodeCountFunctionMap } from "./sql";
+import {
+  getNodeData,
+  knowsQuery,
+  nodeCountFunctionMap,
+} from "./sql";
 
 const app: Application = express();
 app.use(cors());
@@ -37,6 +37,29 @@ app.use(cors());
 app.listen(port, function () {
   console.log(`App is listening on port ${port} !`);
 });
+
+app.get(
+  "/graph/knowsQuery",
+  async (req: Request, res: Response) => {
+    const sql = await getSql(req);
+
+    const { nodes, edges } = await knowsQuery(sql);
+    console.log("nodes: ", nodes.length);
+    console.log("edges: ", edges.length);
+
+    const elements = [...nodes, ...edges];
+    const cy = getCytoscape(
+      elements,
+      undefined,
+      LayoutType.COSE
+    );
+
+    console.log("end");
+    const results = getCyElements(cy);
+
+    res.send(results);
+  }
+);
 
 app.get(
   "/graph/node-sample",
