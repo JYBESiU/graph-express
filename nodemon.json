@@ -1,7 +1,6 @@
 {
   "events": {
-    "restart": "kill-port 3001",
-    "crash": "kill-port 3001"
+    "crash": "kill-port 3001; ts-node src/app.ts;"
   },
-  "delay": "2000"
+  "delay": "1000"
 }

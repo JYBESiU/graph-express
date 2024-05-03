@@ -74,13 +74,13 @@ app.get(
       await getElementsByEdgeSampling(
         sql,
         nodeLabels,
-        0.0001
+        0.001
       );
 
     const cy = getCytoscape(
       elements,
       clusters,
-      LayoutType.CISE
+      LayoutType.COSE
     );
     console.log("end");
     const results = getCyElements(cy);
@@ -100,8 +100,13 @@ app.get("/graph", async (req: Request, res: Response) => {
     edgeLabels
   );
 
-  const cy = getCytoscape(elements, clusters);
+  const cy = getCytoscape(
+    elements,
+    clusters,
+    LayoutType.FCOSE
+  );
 
+  console.log("end");
   const results = getCyElements(cy);
 
   res.send(results);

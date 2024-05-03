@@ -134,18 +134,22 @@ const coseLayout: CoseLayoutOptions = {
   name: "cose",
   animate: false,
   randomize: true,
-  componentSpacing: 100,
-  nodeRepulsion: (node) => 10000,
+  componentSpacing: 5,
+  nodeRepulsion: (node) => Math.pow(node.degree(), 5),
   idealEdgeLength: (edge) => 64,
 };
 
 const fcoseLayout = {
   name: "fcose",
   animate: false,
-  packComponents: false,
-  uniformNodeDimensions: true,
-  nodeSeparation: 6500,
-  nodeRepulsion: (node: any) => 500000,
+  nodeSeparation: 500,
+  // nodeRepulsion: (node: any) => Math.pow(node.degree(), 10),
+  nodeRepulsion: (node: any) => {
+    const res = 10000000 / Math.pow(node.degree() || 1, 5);
+    // console.log("res :", res);
+    return res;
+  },
+  idealEdgeLength: (edge: any) => 64,
 };
 
 const eulerLayout = {
@@ -156,7 +160,7 @@ const eulerLayout = {
 const spreadLayout = {
   name: "spread",
   animate: false,
-  prelayout: coseLayout,
+  prelayout: fcoseLayout,
 };
 
 const dagreLayout = {
@@ -173,5 +177,5 @@ const makeCiseLayout = (clusters?: string[][]) => ({
   clusters,
   nodeSeparation: 40,
   idealInterClusterEdgeLengthCoefficient: 3,
-  nodeRepulsion: 40000,
+  nodeRepulsion: 400,
 });
