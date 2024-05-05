@@ -27,7 +27,9 @@ import {
 } from "./utils/util";
 import {
   getNodeData,
+  hasMemberQuery,
   knowsQuery,
+  likesQuery,
   nodeCountFunctionMap,
 } from "./sql";
 
@@ -39,15 +41,20 @@ app.listen(port, function () {
 });
 
 app.get(
-  "/graph/knowsQuery",
+  "/graph/preDefinedQuery",
   async (req: Request, res: Response) => {
     const sql = await getSql(req);
+    const query = req.query.query as string;
 
-    const { nodes, edges } = await knowsQuery(sql);
-    console.log("nodes: ", nodes.length);
-    console.log("edges: ", edges.length);
+    const queryFunction =
+      query === "knows"
+        ? knowsQuery
+        : query === "likes"
+        ? likesQuery
+        : hasMemberQuery;
 
-    const elements = [...nodes, ...edges];
+    const elements = await queryFunction(sql);
+
     const cy = getCytoscape(
       elements,
       undefined,
