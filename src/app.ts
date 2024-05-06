@@ -20,7 +20,6 @@ import {
   getElementsByNodeSampling,
   getElementsByEdgeSampling,
 } from "./elements";
-
 import {
   getEdgeLablesByNodeLabels,
   getNodeLabelsByEdgeLabel,
@@ -55,16 +54,42 @@ app.get(
 
     const elements = await queryFunction(sql);
 
+    const startTime = performance.now();
+
     const cy = getCytoscape(
       elements,
       undefined,
       LayoutType.COSE
     );
 
-    console.log("end");
+    const endTime = performance.now();
+    console.log(
+      `sf: ${req.query.sf}, query: ${query}, time: ${
+        endTime - startTime
+      }`
+    );
     const results = getCyElements(cy);
 
     res.send(results);
+  }
+);
+
+app.get(
+  "/graph/preDefinedQuery/client",
+  async (req: Request, res: Response) => {
+    const sql = await getSql(req);
+    const query = req.query.query as string;
+
+    const queryFunction =
+      query === "knows"
+        ? knowsQuery
+        : query === "likes"
+        ? likesQuery
+        : hasMemberQuery;
+
+    const elements = await queryFunction(sql);
+
+    res.send(elements);
   }
 );
 
