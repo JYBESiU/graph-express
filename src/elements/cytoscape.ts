@@ -1,3 +1,5 @@
+import { performance } from "perf_hooks";
+
 import cytoscape, {
   BreadthFirstLayoutOptions,
   CircleLayoutOptions,
@@ -39,11 +41,20 @@ export function getCytoscape(
   layoutName?: LayoutType
 ) {
   const cy = cytoscape({
-    elements,
-    layout: makeLayout(layoutName, clusters),
+    // @ts-ignore
+    style,
   });
 
-  return cy;
+  console.time("time by console");
+  const startTime = performance.now();
+
+  cy.json({ elements });
+  cy.layout(makeLayout(layoutName, clusters)).run();
+
+  console.timeEnd("time by console");
+  const endTime = performance.now();
+
+  return { cy, time: endTime - startTime };
 }
 
 export async function getCytosnapImage(

@@ -54,19 +54,18 @@ app.get(
 
     const elements = await queryFunction(sql);
 
-    const startTime = performance.now();
-
-    const cy = getCytoscape(
+    const { cy, time } = getCytoscape(
       elements,
       undefined,
       LayoutType.COSE
     );
 
-    const endTime = performance.now();
     console.log(
-      `sf: ${req.query.sf}, query: ${query}, time: ${
-        endTime - startTime
-      }`
+      `sf: ${
+        req.query.sf
+      }, query: ${query}, time by performance: ${time.toFixed(
+        0
+      )} ms`
     );
     const results = getCyElements(cy);
 
@@ -107,7 +106,7 @@ app.get(
       );
     console.log("elements: ", elements.length);
 
-    const cy = getCytoscape(
+    const { cy } = getCytoscape(
       elements,
       clusters,
       LayoutType.COSE
@@ -132,7 +131,7 @@ app.get(
         0.001
       );
 
-    const cy = getCytoscape(
+    const { cy } = getCytoscape(
       elements,
       clusters,
       LayoutType.COSE
@@ -155,7 +154,7 @@ app.get("/graph", async (req: Request, res: Response) => {
     edgeLabels
   );
 
-  const cy = getCytoscape(
+  const { cy } = getCytoscape(
     elements,
     clusters,
     LayoutType.FCOSE
@@ -231,7 +230,7 @@ app.get(
     });
 
     const elements = [...selectedNodes, ...edges];
-    const cy = getCytoscape(
+    const { cy } = getCytoscape(
       elements,
       undefined,
       LayoutType.DAGRE
