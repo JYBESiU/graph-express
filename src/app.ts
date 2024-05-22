@@ -57,7 +57,7 @@ app.get(
     const { cy, time } = getCytoscape(
       elements,
       undefined,
-      LayoutType.COSE
+      LayoutType.COLA
     );
 
     console.log(
@@ -65,8 +65,9 @@ app.get(
         req.query.sf
       }, query: ${query}, time by performance: ${time.toFixed(
         0
-      )} ms`
+      )} ms \n`
     );
+
     const results = getCyElements(cy);
 
     res.send(results);
@@ -102,14 +103,14 @@ app.get(
       await getElementsByNodeSampling(
         sql,
         nodeLabels,
-        0.002
+        0.11
       );
     console.log("elements: ", elements.length);
 
     const { cy } = getCytoscape(
       elements,
       clusters,
-      LayoutType.COSE
+      LayoutType.FCOSE
     );
     console.log("end");
     const results = getCyElements(cy);
@@ -125,16 +126,12 @@ app.get(
     const nodeLabels = req.query.nodeLabels as NodeLabel[];
 
     const { elements, clusters } =
-      await getElementsByEdgeSampling(
-        sql,
-        nodeLabels,
-        0.001
-      );
+      await getElementsByEdgeSampling(sql, nodeLabels, 0.1);
 
     const { cy } = getCytoscape(
       elements,
       clusters,
-      LayoutType.COSE
+      LayoutType.FCOSE
     );
     console.log("end");
     const results = getCyElements(cy);
@@ -171,14 +168,15 @@ app.get(
   async (req: Request, res: Response) => {
     const sql = await getSql(req);
     const nodeLabels = req.query.nodeLabels as NodeLabel[];
+    const edgeLabels = req.query.edgeLabels as EdgeLabel[];
 
-    const results = await getElementsByEdgeSampling(
+    const { elements } = await getElementsByLabels(
       sql,
       nodeLabels,
-      0.00005
+      edgeLabels
     );
 
-    res.send(results);
+    res.send(elements);
   }
 );
 
@@ -271,6 +269,7 @@ app.get(
   async (req: Request, res: Response) => {
     const sql = await getSql(req);
     const nodeLabel = req.query.nodeLabel as NodeLabel;
+    console.log("nodeLabel :", nodeLabel);
 
     const count = await nodeCountFunctionMap[nodeLabel](
       sql

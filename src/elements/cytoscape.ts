@@ -1,4 +1,5 @@
 import { performance } from "perf_hooks";
+import v8 from "v8";
 
 import cytoscape, {
   BreadthFirstLayoutOptions,
@@ -45,11 +46,24 @@ export function getCytoscape(
     style,
   });
 
+  console.log(layoutName);
+
+  const beforeHeap = process.memoryUsage().heapUsed;
+  console.log("beforeHeap :", beforeHeap / 1000000);
+
   console.time("time by console");
   const startTime = performance.now();
 
   cy.json({ elements });
   cy.layout(makeLayout(layoutName, clusters)).run();
+
+  const afterHeap = process.memoryUsage().heapUsed;
+  // console.log(v8.getHeapStatistics());
+  console.log("afterHeap :", afterHeap / 1000000);
+
+  console.log(
+    `Heap used: ${(afterHeap - beforeHeap) / 1000000} MB`
+  );
 
   console.timeEnd("time by console");
   const endTime = performance.now();
@@ -110,6 +124,8 @@ const makeLayout = (
       return dagreLayout;
     case LayoutType.CISE:
       return makeCiseLayout(clusters);
+    case LayoutType.COLA:
+      return colaLayout;
 
     default:
       return circleLayout;
@@ -146,21 +162,24 @@ const coseLayout: CoseLayoutOptions = {
   animate: false,
   randomize: true,
   componentSpacing: 100,
-  nodeRepulsion: (node) => 100 * Math.pow(node.degree(), 3),
+  // nodeRepulsion: (node) => 100 * Math.pow(node.degree(), 3),
+  nodeRepulsion: (node) => 10000,
   idealEdgeLength: (edge) => 64,
 };
 
 const fcoseLayout = {
   name: "fcose",
   animate: false,
-  nodeSeparation: 1000,
-  // nodeRepulsion: (node: any) => Math.pow(node.degree(), 10),
-  nodeRepulsion: (node: any) => {
-    const res = 100000000 / Math.pow(node.degree(), 10);
-    // console.log("res :", res);
-    return res;
-  },
-  idealEdgeLength: (edge: any) => 1000,
+  nodeSeparation: 100,
+  nodeRepulsion: (node: any) =>
+    // 100 * Math.pow(node.degree(), 3),
+    40000,
+  idealEdgeLength: (edge: any) => 64,
+};
+
+const colaLayout = {
+  name: "cola",
+  animate: false,
 };
 
 const eulerLayout = {

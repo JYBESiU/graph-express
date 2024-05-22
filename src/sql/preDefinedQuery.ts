@@ -59,11 +59,14 @@ const addEdge = (
 export const knowsQuery = async (sql: Sql) => {
   initialize();
 
+  const personId = "person_" + 94;
+  addNode(personId, NodeLabel.TAGCLASS);
+
   const fixedPerson = await sql`
     SELECT *
     FROM cypher($$
       MATCH (p1: person)-[l:person_studyat_university]->(u1: university)
-      WHERE p1.vertex_id = 933
+      WHERE p1.vertex_id = 94
       RETURN p1.vertex_id, u1.vertex_id
     $$) as (p1 bigint, u1 bigint)
   ;`;
@@ -85,7 +88,7 @@ export const knowsQuery = async (sql: Sql) => {
     SELECT *
     FROM cypher($$
       MATCH (p1: person)-[k:person_knows_person]->(p2: person)-[l:person_studyat_university]->(u1: university)
-      WHERE p1.vertex_id = 933
+      WHERE p1.vertex_id = 94
       RETURN p1.vertex_id, p2.vertex_id, u1.vertex_id
     $$) as (p1 bigint, p2 bigint, u1 bigint)
   ;`;
@@ -114,7 +117,7 @@ export const knowsQuery = async (sql: Sql) => {
     SELECT *
     FROM cypher($$
       MATCH (p1: person)-[k1:person_knows_person]->(p2: person)-[k2:person_knows_person]->(p3: person)-[l:person_studyat_university]->(u1: university)
-      WHERE p1.vertex_id = 933
+      WHERE p1.vertex_id = 94
       RETURN p1.vertex_id, p2.vertex_id, p3.vertex_id, u1.vertex_id
     $$) as (p1 bigint, p2 bigint, p3 bigint, u1 bigint)
   ;`;

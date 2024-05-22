@@ -42,4 +42,5 @@ export enum LayoutType {
   EULER = "euler",
   SPREAD = "spread",
   DAGRE = "dagre",
+  COLA = "cola",
 }
